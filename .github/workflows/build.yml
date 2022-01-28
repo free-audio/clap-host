@@ -24,12 +24,15 @@ jobs:
           - os: 'ubuntu-latest'
             mono: 'mono'
             triplet: 'x64-linux'
+            artifact: 'x86_64-linux'
           - os: 'windows-latest'
             mono: ''
             triplet: 'x64-windows'
+            artifact: 'x86_64-windows'
           - os: 'macos-latest'
             mono: 'mono'
             triplet: 'x64-osx'
+            artifact: 'x86_64-macos'
 
     env:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
@@ -110,5 +113,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: clap-host
+          name: clap-host-${{ matrix.artifact }}.tar.xz
           path: clap-host.tar.xz
