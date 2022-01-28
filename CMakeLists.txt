@@ -5,8 +5,6 @@ cmake_policy(SET CMP0100 NEW) # handle .hh files
 enable_testing()
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
-set(CLAP_ENABLE_HOST TRUE CACHE BOOL "Enable example host")
-set(CLAP_ENABLE_PLUGINS TRUE CACHE BOOL "Enable example plugins")
 
 project(CLAP_EXAMPLES C CXX)
 
@@ -29,51 +27,29 @@ endif()
 add_subdirectory(clap EXCLUDE_FROM_ALL)
 add_subdirectory(clap-helpers EXCLUDE_FROM_ALL)
 
-if(CLAP_ENABLE_HOST)
-  if(UsePkgConfig)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(RtMidi REQUIRED IMPORTED_TARGET rtmidi)
-    pkg_check_modules(RtAudio REQUIRED IMPORTED_TARGET rtaudio)
-  else()
-    find_package(RtMidi CONFIG REQUIRED)
-    find_package(RtAudio CONFIG REQUIRED)
-  endif()
-
-  add_subdirectory(host)
+if(UsePkgConfig)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(RtMidi REQUIRED IMPORTED_TARGET rtmidi)
+  pkg_check_modules(RtAudio REQUIRED IMPORTED_TARGET rtaudio)
+else()
+  find_package(RtMidi CONFIG REQUIRED)
+  find_package(RtAudio CONFIG REQUIRED)
 endif()
 
-if(CLAP_ENABLE_PLUGINS AND FALSE)
-  find_package(Boost COMPONENTS serialization iostreams REQUIRED)
-  add_subdirectory(plugins)
-endif()
+add_subdirectory(host)
 
 ###########
 ## CPACK ##
 ###########
 
-set(CPACK_PACKAGE_NAME "clap-examples")
+set(CPACK_PACKAGE_NAME "clap-host")
 set(CPACK_PACKAGE_VENDOR "CLAP")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "CLAP Reference Plugins and Host")
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/free-audio/clap-examples")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "CLAP Reference Host")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/free-audio/clap-host")
 set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "0")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "clap-examples")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "clap-host")
 set(CPACK_NSIS_MANIFEST_DPI_AWARE TRUE)
-set(CPACK_NSIS_plugins_INSTALL_DIRECTORY "$COMMONPROGRAMDATA/CLAP")
 
 include(CPack)
-
-if(CLAP_ENABLE_HOST AND CLAP_ENABLE_PLUGINS)
-  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    add_custom_target(run-host
-      COMMAND $<TARGET_FILE:clap-host> -p $<TARGET_BUNDLE_DIR:clap-plugins> -i 0
-      DEPENDS clap-host clap-plugins
-      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIRECTORY}")
-  else()
-    add_custom_target(run-host
-      COMMAND $<TARGET_FILE:clap-host> -p $<TARGET_FILE:clap-plugins> -i 0
-      DEPENDS clap-host clap-plugins
-      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIRECTORY}")
-  endif()
-endif()

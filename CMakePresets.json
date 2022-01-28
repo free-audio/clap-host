@@ -46,37 +46,10 @@
             "inherits": ["base", "vcpkg"]
         },
         {
-            "name": "macos-arm64-plugins",
-            "inherits": ["ninja-vcpkg"],
-            "description": "macOS plugins built with vcpkg",
-            "cacheVariables": {
-                "CLAP_ENABLE_HOST": {
-                    "type": "BOOL",
-                    "value": false
-                },
-                "CLAP_ENABLE_PLUGINS": {
-                    "type": "BOOL",
-                    "value": true
-                },
-                "VCPKG_TARGET_TRIPLET": {
-                    "type": "STRING",
-                    "value": "arm64-osx-clap-plugins"
-                }
-            }
-        },
-        {
-            "name": "macos-arm64-host",
+            "name": "macos-arm64",
             "inherits": ["ninja-vcpkg"],
             "description": "macOS host built with vcpkg",
             "cacheVariables": {
-                "CLAP_ENABLE_HOST": {
-                    "type": "BOOL",
-                    "value": true
-                },
-                "CLAP_ENABLE_PLUGINS": {
-                    "type": "BOOL",
-                    "value": false
-                },
                 "VCPKG_TARGET_TRIPLET": {
                     "type": "STRING",
                     "value": "arm64-osx-clap-host"
@@ -101,7 +74,7 @@
             "name": "base",
             "hidden": true,
             "targets": [
-                "all", "clap-host"
+                "clap-host"
             ]
         },
         {
@@ -143,12 +116,8 @@
             "configuration": "Release"
         },
         {
-            "name": "macos-arm64-host",
-            "configurePreset": "macos-arm64-host"
-        },
-        {
-            "name": "macos-arm64-plugins",
-            "configurePreset": "macos-arm64-plugins"
+            "name": "macos-arm64",
+            "configurePreset": "macos-arm64"
         }
     ],
     "testPresets": [
@@ -163,12 +132,8 @@
             "configurePreset": "ninja-system"
         },
         {
-            "name": "macos-arm64-host",
-            "configurePreset": "macos-arm64-host"
-        },
-        {
-            "name": "macos-arm64-plugins",
-            "configurePreset": "macos-arm64-plugins"
+            "name": "macos-arm64",
+            "configurePreset": "macos-arm64"
         }
     ]
 }

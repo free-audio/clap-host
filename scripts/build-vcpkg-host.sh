@@ -7,4 +7,5 @@ fi
 
 ./vcpkg --overlay-triplets=$PWD/../vcpkg-overlay/triplets --triplet=arm64-osx-clap-host install --recurse rtmidi rtaudio qtbase[core,widgets,doubleconversion,concurrent]
 cd ..
-cmake --preset macos-arm64-host
+cmake --preset macos-arm64
+cmake --build --preset macos-arm64 --target clap-host
