@@ -25,10 +25,20 @@ jobs:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
 
     steps:
-      # This step assumes `vcpkg` has been bootstrapped (run `./vcpkg/bootstrap-vcpkg`)
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - uses: seanmiddleditch/gha-setup-ninja@master
+
+      - uses: lukka/get-cmake@latest
+
+      - name: 'Bootstrap VCPKG'
+        shell: bash
+        run: cd vcpkg && ./bootstrap-vcpkg.sh
+
       - name: 'Setup NuGet Credentials'
         shell: 'bash'
-        # Replace <OWNER> with your organization name
         run: >
           ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1`
           sources add
@@ -37,14 +47,6 @@ jobs:
           -name "GitHub"
           -username "free-audio"
           -password "${{ secrets.GITHUB_TOKEN }}"
-
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-
-      - uses: seanmiddleditch/gha-setup-ninja@master
-
-      - uses: lukka/get-cmake@latest
 
       - name: Setup MacOS
         if: startsWith(matrix.os, 'macOS')
