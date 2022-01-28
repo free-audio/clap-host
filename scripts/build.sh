@@ -11,13 +11,18 @@ fi
 
 if [[ $(uname) = Linux ]] ; then
   QT_FEATURES=",xcb,xcb-xlib,xkb,xkbcommon-x11,xlib,xrender"
+  cmake_preset="ninja-vcpkg"
 elif [[ $(uname) = Darwin ]] ; then
   QT_FEATURES=""
+  cmake_preset="ninja-vcpkg"
+else
+  QT_FEATURES=""
+  cmake_preset="vs-vcpkg"
 fi
 
 vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_triplet install --recurse \
   rtmidi rtaudio "qtbase[core,png,widgets,doubleconversion,concurrent,appstore-compliant,freetype,harfbuzz${QT_FEATURES}]"
 
-cmake --preset ninja-vcpkg $cmake_triplet
-cmake --build --preset ninja-vcpkg-release --target clap-host
+cmake --preset $cmake_preset $cmake_triplet
+cmake --build --preset $cmake_preset --config Release --target clap-host
 tar -cvJf clap-host.tar.xz --strip-components=4 builds/ninja-vcpkg/host/Release/clap-host

@@ -42,6 +42,12 @@
             "inherits": ["base", "vcpkg"]
         },
         {
+            "name": "vs-vcpkg",
+            "description": "Configure with vcpkg toolchain and generate Visual Studio project files for all configurations",
+            "inherits": ["base", "vcpkg"],
+            "generator": "Visual Studio 17 2022"
+        },
+        {
             "name": "ninja-system",
             "description": "Ninja + System Libraries",
             "binaryDir": "${sourceDir}/builds/${presetName}",
@@ -66,39 +72,19 @@
             "name": "ninja-vcpkg",
             "description": "Build using Ninja and VCPKG",
             "configurePreset": "ninja-vcpkg",
-            "hidden": true,
             "inherits": "base"
-        },
-        {
-            "name": "ninja-vcpkg-debug",
-            "displayName": "debug",
-            "inherits": "ninja-vcpkg",
-            "configuration": "Debug"
-        },
-        {
-            "name": "ninja-vcpkg-release",
-            "displayName": "release",
-            "inherits": "ninja-vcpkg",
-            "configuration": "Release"
         },
         {
             "name": "ninja-system",
             "inherits": "base",
             "description": "Build using Ninja and system libraries",
-            "configurePreset": "ninja-system",
-            "hidden": true
+            "configurePreset": "ninja-system"
         },
         {
-            "name": "ninja-system-debug",
-            "displayName": "debug",
-            "inherits": "ninja-system",
-            "configuration": "Debug"
-        },
-        {
-            "name": "ninja-system-release",
-            "displayName": "release",
-            "inherits": "ninja-system",
-            "configuration": "Release"
+            "name": "vs-vcpkg",
+            "inherits": "base",
+            "description": "Build using Visual Studio and VCPKG",
+            "configurePreset": "vs-vcpkg"
         }
     ],
     "testPresets": [
