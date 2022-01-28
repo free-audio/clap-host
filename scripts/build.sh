@@ -5,9 +5,8 @@ if [[ ! -x vcpkg/vcpkg ]] ; then
   vcpkg/bootstrap-vcpkg.sh
 fi
 
-# qtbase[core,widgets,doubleconversion,concurrent]
 vcpkg/vcpkg --overlay-triplets=$PWD/../vcpkg-overlay/triplets install \
-  rtmidi rtaudio
+  rtmidi rtaudio qtbase[core,widgets,doubleconversion,concurrent]
 
 
 cmake --preset ninja-vcpkg
