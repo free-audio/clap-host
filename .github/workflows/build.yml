@@ -23,10 +23,13 @@ jobs:
         include:
           - os: 'ubuntu-latest'
             mono: 'mono'
+            triplet: 'x64-linux'
           - os: 'windows-latest'
             mono: ''
+            triplet: 'x64-windows'
           - os: 'macos-latest'
             mono: 'mono'
+            triplet: 'x64-osx'
 
     env:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
@@ -47,7 +50,7 @@ jobs:
 
       - name: 'Bootstrap VCPKG'
         shell: bash
-        run: cd vcpkg && ./bootstrap-vcpkg.sh
+        run: vcpkg/bootstrap-vcpkg.sh
 
       - name: 'Setup NuGet Credentials'
         shell: 'bash'
@@ -103,7 +106,7 @@ jobs:
 
       - name: Build
         shell: bash
-        run: scripts/build.sh
+        run: scripts/build.sh ${{ matrix.triplet }}
 
       - uses: actions/upload-artifact@v2
         with:
