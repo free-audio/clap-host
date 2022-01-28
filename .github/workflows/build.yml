@@ -20,11 +20,22 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: 'ubuntu-latest'
+            mono: 'mono'
+          - os: 'windows-latest'
+            mono: ''
+          - os: 'macos-latest'
+            mono: 'mono'
 
     env:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
 
     steps:
+      - name: 'Remove old VCPKG'
+        shell: 'bash'
+        run: rm -rf "$VCPKG_INSTALLATION_ROOT"
+
       - uses: actions/checkout@v2
         with:
           submodules: true
