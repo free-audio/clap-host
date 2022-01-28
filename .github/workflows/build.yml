@@ -101,13 +101,9 @@ jobs:
           libxrender-dev
           libatspi2.0-dev
 
-      - name: Build (Linux and macOS)
-        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
+      - name: Build
+        shell: bash
         run: scripts/build.sh
-
-      - name: Build (Windows)
-        if: startsWith(matrix.os, 'win')
-        run: scripts/build.ps1
 
       - uses: actions/upload-artifact@v2
         with:
