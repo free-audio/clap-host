@@ -10,7 +10,7 @@ if [[ "$1" != "" ]]; then
 fi
 
 if [[ $(uname) = Linux ]] ; then
-  QT_FEATURES=",xcb,xcb-xlib,xkb,xkbcommon-x11,xlib,xrender"
+  QT_FEATURES=",xcb,xcb-xlib,xkb,xkbcommon-x11,xlib,xrender,fontconfig"
   cmake_preset="ninja-vcpkg"
 elif [[ $(uname) = Darwin ]] ; then
   QT_FEATURES=""
