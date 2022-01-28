@@ -71,5 +71,10 @@ jobs:
           libxrender-dev
           libatspi2.0-dev
 
-      - name: Custom Build
+      - name: Build (Linux and macOS)
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
         run: scripts/build.sh
+
+      - name: Build (Windows)
+        if: startsWith(matrix.os, 'win')
+        run: scripts/build.ps1
