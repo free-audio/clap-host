@@ -15,7 +15,7 @@ elif [[ $(uname) = Darwin ]] ; then
 fi
 
 vcpkg/vcpkg --overlay-triplets=$PWD/../vcpkg-overlay/triplets $triplet install \
-  rtmidi rtaudio "qtbase[core,widgets,doubleconversion,concurrent,appstore-compliant${QT_FEATURES}]"
+  rtmidi rtaudio "qtbase[core,png,widgets,doubleconversion,concurrent,appstore-compliant${QT_FEATURES}]"
 
 
 cmake --preset ninja-vcpkg
