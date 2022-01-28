@@ -14,7 +14,7 @@ set(UsePkgConfig TRUE CACHE BOOL "Use PkgConfig to find RtMidi and RtAudio depen
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets Qml Quick REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang|Clang|GNU")
   add_compile_options(-fvisibility=hidden -fvisibility-inlines-hidden
@@ -42,7 +42,7 @@ if(CLAP_ENABLE_HOST)
   add_subdirectory(host)
 endif()
 
-if(CLAP_ENABLE_PLUGINS)
+if(CLAP_ENABLE_PLUGINS AND FALSE)
   find_package(Boost COMPONENTS serialization iostreams REQUIRED)
   add_subdirectory(plugins)
 endif()

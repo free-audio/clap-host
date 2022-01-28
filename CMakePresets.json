@@ -101,7 +101,7 @@
             "name": "base",
             "hidden": true,
             "targets": [
-                "all", "clap-host", "clap-plugins", "clap-gui", "clap-io", "run-host"
+                "all", "clap-host"
             ]
         },
         {
