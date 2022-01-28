@@ -15,3 +15,5 @@ endif()
 if(PORT MATCHES "alsa")
     set(VCPKG_LIBRARY_LINKAGE dynamic)
 endif()
+
+set(QT_NAMESPACE ClapHost)

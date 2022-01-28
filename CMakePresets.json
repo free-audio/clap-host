@@ -33,10 +33,6 @@
                 "UsePkgConfig": {
                     "type": "BOOL",
                     "value": false
-                },
-                "CLAP_PLUGIN_GUI_MODEL": {
-                    "type": "STRING",
-                    "value": "local"
                 }
             }
         },
@@ -44,17 +40,6 @@
             "name": "ninja-vcpkg",
             "description": "Configure with vcpkg toolchain and generate Ninja project files for all configurations",
             "inherits": ["base", "vcpkg"]
-        },
-        {
-            "name": "macos-arm64",
-            "inherits": ["ninja-vcpkg"],
-            "description": "macOS host built with vcpkg",
-            "cacheVariables": {
-                "VCPKG_TARGET_TRIPLET": {
-                    "type": "STRING",
-                    "value": "arm64-osx-clap-host"
-                }
-            }
         },
         {
             "name": "ninja-system",
@@ -114,10 +99,6 @@
             "displayName": "release",
             "inherits": "ninja-system",
             "configuration": "Release"
-        },
-        {
-            "name": "macos-arm64",
-            "configurePreset": "macos-arm64"
         }
     ],
     "testPresets": [
@@ -130,10 +111,6 @@
             "name": "ninja-system",
             "description": "Test using Ninja and system libraries",
             "configurePreset": "ninja-system"
-        },
-        {
-            "name": "macos-arm64",
-            "configurePreset": "macos-arm64"
         }
     ]
 }
