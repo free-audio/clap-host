@@ -6,8 +6,8 @@ set(VCPKG_LIBRARY_LINKAGE static)
 
 set(VCPKG_CMAKE_SYSTEM_NAME Linux)
 
-set(VCPKG_C_FLAGS "-Os -fomit-frame-pointer")
-set(VCPKG_CXX_FLAGS "-Os -fomit-frame-pointer")
+set(VCPKG_C_FLAGS_RELEASE "-Os -fomit-frame-pointer")
+set(VCPKG_CXX_FLAGS_RELEASE "-Os -fomit-frame-pointer")
 
 if(NOT PORT MATCHES "harfbuzz")
     # harfbuzz is badly packaged for now, so we also make the debug build
