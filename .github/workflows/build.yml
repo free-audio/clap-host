@@ -33,8 +33,9 @@ jobs:
 
     steps:
       - name: 'Remove old VCPKG'
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
         shell: 'bash'
-        run: rm -rf "$VCPKG_INSTALLATION_ROOT"
+        run: sudo rm -rf "$VCPKG_INSTALLATION_ROOT"
 
       - uses: actions/checkout@v2
         with:
