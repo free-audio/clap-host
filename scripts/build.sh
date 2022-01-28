@@ -14,7 +14,7 @@ elif [[ $(uname) = Darwin ]] ; then
   QT_FEATURES=""
 fi
 
-vcpkg/vcpkg --overlay-triplets=$PWD/../vcpkg-overlay/triplets $triplet install \
+vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $triplet install \
   rtmidi rtaudio "qtbase[core,png,widgets,doubleconversion,concurrent,appstore-compliant${QT_FEATURES}]"
 
 
