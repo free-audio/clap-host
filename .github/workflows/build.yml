@@ -71,17 +71,5 @@ jobs:
           libxrender-dev
           libatspi2.0-dev
 
-      - name: Restore artifacts, or setup vcpkg for building artifacts
-        uses: lukka/run-vcpkg@v10
-        id: runvcpkg
-        with:
-          vcpkgJsonGlob: "vcpkg.json"
-
-      - name: Build
-        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'win')
-        uses: lukka/run-cmake@v10
-        id: runcmake
-        with:
-          configurePreset: "ninja-vcpkg"
-          buildPreset: "ninja-vcpkg"
-          testPreset: "ninja-vcpkg"
+      - name: Custom Build
+        run: scripts/build.sh
