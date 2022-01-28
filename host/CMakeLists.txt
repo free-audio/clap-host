@@ -42,7 +42,7 @@ add_executable(clap-host
   )
 
 set_target_properties(clap-host PROPERTIES
-  CXX_STANDARD 20
+  CXX_STANDARD 17
   WIN32_EXECUTABLE true
   VS_DEBUGGER_COMMAND_ARGUMENTS "-p $<TARGET_FILE:clap-plugins> -i 0")
 
