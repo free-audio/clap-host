@@ -78,3 +78,8 @@ jobs:
       - name: Build (Windows)
         if: startsWith(matrix.os, 'win')
         run: scripts/build.ps1
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: clap-host
+          path: clap-host.tar.xz

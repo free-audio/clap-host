@@ -9,3 +9,4 @@ fi
 cd ..
 cmake --preset ninja-vcpkg
 cmake --build --preset ninja-vcpkg-release --target clap-host
+tar -cvJf clap-host.tar.xz --strip-components=4 builds/ninja-vcpkg/host/Release/clap-host
