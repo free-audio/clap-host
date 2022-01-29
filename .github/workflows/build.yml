@@ -26,16 +26,19 @@ jobs:
             triplet: 'x64-linux'
             artifact: 'x86_64-linux'
             exe_ext: '.exe'
+            build_dir: ninja-vcpkg
           - os: 'windows-2022'
             mono: ''
             triplet: 'x64-windows'
             artifact: 'x86_64-windows'
             exe_ext: '.exe'
+            build_dir: vs-vcpkg
           - os: 'macos-latest'
             mono: 'mono'
             triplet: 'x64-osx'
             artifact: 'x86_64-macos'
             exe_ext: '.exe'
+            build_dir: ninja-vcpkg
 
     env:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
@@ -117,4 +120,4 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: clap-host-${{ matrix.artifact }}
-          path: builds/${{matrix.triplet}}/host/Release/clap-host${{exe_ext}}
+          path: builds/${{matrix.build_dir}}/host/Release/clap-host${{exe_ext}}
