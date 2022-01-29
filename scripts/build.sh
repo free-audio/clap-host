@@ -18,10 +18,11 @@ elif [[ $(uname) = Darwin ]] ; then
 else
   QT_FEATURES=""
   cmake_preset="vs-vcpkg"
+  cmake_conf_extra="-DCMAKE_GENERATOR_PLATFORM=x64"
 fi
 
 vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_triplet install --recurse \
   rtmidi rtaudio "qtbase[core,png,widgets,doubleconversion,concurrent,appstore-compliant${QT_FEATURES}]"
 
-cmake --preset $cmake_preset $cmake_triplet
+cmake --preset $cmake_preset $cmake_triplet $cmake_conf_extra
 cmake --build --preset $cmake_preset --config Release --target clap-host
