@@ -6,14 +6,24 @@ This is not ready yet. Pass your way unless you know what your are doing.
 
 This repo serves as an example to demonstrate how to create a CLAP host.
 
+# Note on static build vs dynamic build
+
+The host uses Qt for its GUI.
+It is fine to dynamically link to Qt, but it is not for a plugin.
+We offer two options:
+- static build, cmake preset: `ninja-vcpkg` or `vs-vcpkg` on Windows.
+- dynamic builg, cmake preset: `ninja-system`
+
+Static builds are convenient for deployment as they are self containded.
+
+Dynamic builds will get your started quickly if your system provides Qt6.
+Static builds will require more time and space.
+
+There is a pending VCPKG [PR](https://github.com/microsoft/vcpkg/pull/22713).
+
 ## Building on various platforms
 
-### macOS with brew
-
-This options is the quickest. But has it dynamically links with Qt,
-you'll have troubles with plugins being dynamically linked to Qt as well.
-
-Note that the resulting build should not be distributed.
+### macOS, dynamic build with brew
 
 ```shell
 # Install dependencies
@@ -29,14 +39,6 @@ cmake --build --preset ninja-system
 ```
 
 ### macOS with vcpkg
-
-This option takes the longuest to build as it requires to build Qt.
-Even if Qt is built statically and all symbols are hidden, there will still
-be a symbol clash due to objective-c's runtime which registers all classes
-into a flat namespace. For that we must rely upon `QT_NAMESPACE` which puts
-every symbols from Qt in the namespace specified by `QT_NAMESPACE`.
-
-VCPKG [PR](https://github.com/microsoft/vcpkg/pull/22713).
 
 ```shell
 # Install build tools
@@ -74,9 +76,19 @@ cd c-h
 scripts/build.sh
 ```
 
-### Linux
+### Linux, using system libraries (dynamic)
 
-### Using vcpkg
+```bash
+# on archlinux, adapt to your distribution and package manager
+sudo pacman -S qt git ninja cmake
+
+git clone --recurse-submodules https://github.com/free-audio/clap-host
+cd clap-host
+cmake --preset ninja-system
+cmake --build --preset ninja-system
+```
+
+### Linux, using vcpkg (static)
 
 ```bash
 git clone --recurse-submodules https://github.com/free-audio/clap-host
