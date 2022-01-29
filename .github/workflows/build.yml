@@ -113,5 +113,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: clap-host-${{ matrix.artifact }}.tar.xz
-          path: clap-host.tar.xz
+          name: clap-host-${{ matrix.artifact }}
+          path: builds/${{matrix.triplet}}/host/Release/clap-host

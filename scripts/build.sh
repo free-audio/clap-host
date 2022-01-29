@@ -25,4 +25,3 @@ vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_triplet install --r
 
 cmake --preset $cmake_preset $cmake_triplet
 cmake --build --preset $cmake_preset --config Release --target clap-host
-tar -cvJf clap-host.tar.xz --strip-components=4 builds/ninja-vcpkg/host/Release/clap-host
