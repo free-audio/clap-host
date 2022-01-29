@@ -80,7 +80,7 @@ scripts/build.sh
 
 ```bash
 # on archlinux, adapt to your distribution and package manager
-sudo pacman -S qt git ninja cmake
+sudo pacman -S qt git ninja cmake rtaudio rtmidi
 
 git clone --recurse-submodules https://github.com/free-audio/clap-host
 cd clap-host
