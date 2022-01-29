@@ -41,11 +41,6 @@ add_executable(clap-host
   precompiled-header.hh
   )
 
-set_target_properties(clap-host PROPERTIES
-  CXX_STANDARD 17
-  WIN32_EXECUTABLE true
-  VS_DEBUGGER_COMMAND_ARGUMENTS "-p $<TARGET_FILE:clap-plugins> -i 0")
-
 target_link_libraries(clap-host PRIVATE Qt6::Widgets clap-helpers)
 target_precompile_headers(clap-host PRIVATE precompiled-header.hh)
 
