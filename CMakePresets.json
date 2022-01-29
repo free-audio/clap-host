@@ -41,7 +41,8 @@
             "name": "vs-vcpkg",
             "description": "Configure with vcpkg toolchain and generate Visual Studio project files for all configurations",
             "inherits": ["base", "vcpkg"],
-            "generator": "Visual Studio 17 2022"
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64"
         },
         {
             "name": "ninja-system",
