@@ -6,7 +6,7 @@ This is not ready yet. Pass your way unless you know what your are doing.
 
 This repo serves as an example to demonstrate how to create a CLAP host.
 
-# Note on static build vs dynamic build
+# Notes on static build vs dynamic build
 
 The host uses Qt for its GUI.
 It is fine to dynamically link to Qt, but it is not for a plugin.
