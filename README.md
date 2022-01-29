@@ -1,59 +1,51 @@
-# Minimal Clap Host and Plugins
+# WARNING UNDER CONSTRUCTION!
 
-This repo serves as an example to demonstrate how to create a CLAP host and plugins.
+This is not ready yet. Pass your way unless you know what your are doing.
 
-The plugins are under heavy refactoring and are not working yet.
+# Minimal Clap Host
+
+This repo serves as an example to demonstrate how to create a CLAP host.
 
 ## Building on various platforms
 
 ### macOS with brew
 
-This options is the quickest to play with the examples, but it wont let you run the
-example host and plugin together, for that see the vcpkg option.
-
-Choose this option if you want to test your plugin with clap-host or if you want to
-test the clap-plugins with your host.
+This options is the quickest. But has it dynamically links with Qt,
+you'll have troubles with plugins being dynamically linked to Qt as well.
 
 Note that the resulting build should not be distributed.
 
 ```shell
 # Install dependencies
-brew install boost qt6 pkgconfig rtaudio rtmidi ninja cmake
+brew install qt6 pkgconfig rtaudio rtmidi ninja cmake
 
 # Checkout the code
-git clone --recurse-submodules https://github.com/free-audio/clap-examples
-cd clap-examples
+git clone --recurse-submodules https://github.com/free-audio/clap-host
+cd clap-host
 
 # Build
-cmake --preset ninja-system -DCLAP_PLUGIN_GUI_MODEL=local
-cmake --build builds/ninja-system --config Release
+cmake --preset ninja-system
+cmake --build --preset ninja-system
 ```
 
 ### macOS with vcpkg
 
-This option takes the longuest to build as it requires to build Qt twice.
+This option takes the longuest to build as it requires to build Qt.
 Even if Qt is built statically and all symbols are hidden, there will still
 be a symbol clash due to objective-c's runtime which registers all classes
 into a flat namespace. For that we must rely upon `QT_NAMESPACE` which puts
 every symbols from Qt in the namespace specified by `QT_NAMESPACE`.
 
-Wait for this [PR](https://github.com/microsoft/vcpkg/pull/22713) to complete before trying it.
+VCPKG [PR](https://github.com/microsoft/vcpkg/pull/22713).
 
 ```shell
 # Install build tools
 brew install cmake ninja
 
 # Checkout the code
-git clone --recurse-submodules https://github.com/free-audio/clap-examples
-cd clap-examples
-
-# Build the host
-cmake --preset macos-arm64-host
-cmake --build --preset macos-arm64-host --config Release
-
-# Build the plugins
-cmake --preset macos-arm64-plugins
-cmake --build --preset macos-arm64-plugins --config Release
+git clone --recurse-submodules https://github.com/free-audio/clap-host
+cd clap-host
+scripts/build.sh
 ```
 
 ### Windows
