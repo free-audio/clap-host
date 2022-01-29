@@ -68,15 +68,10 @@ Use the following command inside `Developer PowerShell For VS 2022`:
 ```powershell
 # Checkout the code very close to the root to avoid windows long path issues...
 cd c:\
-git clone --recurse-submodules https://github.com/free-audio/clap-examples clap
-cd clap
+git clone --recurse-submodules https://github.com/free-audio/clap-host c-h
+cd c-h
 
-# Build
-cmake --preset ninja-vcpkg
-cmake --build builds/ninja-vcpkg --config Release
-
-# Build installer
-cmake --build builds/ninaj-vcpkg --target PACKAGE --config Release
+scripts/build.sh
 ```
 
 ### Linux
@@ -84,6 +79,7 @@ cmake --build builds/ninaj-vcpkg --target PACKAGE --config Release
 ### Using vcpkg
 
 ```bash
-cmake --preset ninja-vcpkg -DCLAP_PLUGIN_GUI_MODEL=threaded
-cmake --build --preset ninja-vcpkg-debug --target run-host
+git clone --recurse-submodules https://github.com/free-audio/clap-host
+cd clap-host
+scripts/build.sh
 ```
