@@ -22,10 +22,6 @@
             "name": "vcpkg",
             "hidden": true,
             "cacheVariables": {
-                "VCPKG_OVERLAY_TRIPLETS": {
-                    "type": "FILEPATH",
-                    "value": "${sourceDir}/vcpkg-overlay/triplets"
-                },
                 "CMAKE_TOOLCHAIN_FILE": {
                     "type": "FILEPATH",
                     "value": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
