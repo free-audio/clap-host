@@ -26,7 +26,7 @@ vcpkg_triplet="--triplet ${triplet}-clap-host --host-triplet ${triplet}-clap-hos
 cmake_triplet="-DVCPKG_TARGET_TRIPLET=${triplet}-clap-host -DCMAKE_VCPKG_HOST_TRIPLET=${triplet}-clap-host"
 
 vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_triplet install --recurse \
-  rtmidi rtaudio "core,png,widgets,doubleconversion,concurrent,appstore-compliant,freetype${QT_FEATURES}]"
+  rtmidi rtaudio "qtbase[core,png,widgets,doubleconversion,concurrent,appstore-compliant,freetype${QT_FEATURES}]"
 
 # save space
 rm -rf vcpkg/buildtrees
