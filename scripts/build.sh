@@ -32,4 +32,4 @@ vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_triplet install --r
 rm -rf vcpkg/buildtrees
 
 cmake --preset $cmake_preset $cmake_triplet
-cmake --build --preset $cmake_preset --config Release --target clap-plugins
+cmake --build --preset $cmake_preset --config Release --target clap-host
