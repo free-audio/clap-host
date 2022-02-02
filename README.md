@@ -19,8 +19,6 @@ Static builds are convenient for deployment as they are self containded.
 Dynamic builds will get your started quickly if your system provides Qt6.
 Static builds will require more time and space.
 
-There is a pending VCPKG [PR](https://github.com/microsoft/vcpkg/pull/22713).
-
 ## Building on various platforms
 
 ### macOS, dynamic build with brew
