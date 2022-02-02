@@ -125,4 +125,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: clap-host-${{ matrix.artifact }}.tar.xz
-          path: clap-host.clap.tar.xz
+          path: clap-host.tar.xz
