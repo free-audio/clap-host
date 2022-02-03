@@ -54,7 +54,7 @@ void MainWindow::createMenu() {
    setMenuBar(menuBar);
 
    QMenu *fileMenu = menuBar->addMenu(tr("File"));
-   fileMenu->addAction(tr("Load plugin"));
+   // TODO: fileMenu->addAction(tr("Load plugin"));
    connect(fileMenu->addAction(tr("Load Native Plugin Preset")),
            &QAction::triggered,
            this,
