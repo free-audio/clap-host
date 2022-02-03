@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -e
 
 if [[ ! -x vcpkg/vcpkg ]] ; then
   vcpkg/bootstrap-vcpkg.sh
