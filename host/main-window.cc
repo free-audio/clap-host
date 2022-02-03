@@ -9,6 +9,7 @@
 #include <QToolBar>
 #include <QWindow>
 
+#include "about-dialog.hh"
 #include "application.hh"
 #include "engine.hh"
 #include "main-window.hh"
@@ -93,8 +94,8 @@ void MainWindow::createMenu() {
            &MainWindow::scalePluginWindow);
 
    QMenu *helpMenu = menuBar->addMenu(tr("Help"));
-   helpMenu->addAction(tr("Manual"));
-   helpMenu->addAction(tr("About"));
+   connect(
+      helpMenu->addAction(tr("About")), &QAction::triggered, this, &MainWindow::showAboutDialog);
 }
 
 void MainWindow::showSettingsDialog() {
@@ -139,4 +140,10 @@ void MainWindow::recreatePluginWindow()
 void MainWindow::scalePluginWindow()
 {
    // TODO
+}
+
+void MainWindow::showAboutDialog()
+{
+   AboutDialog dialog(this);
+   dialog.exec();
 }

@@ -1,6 +1,8 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_executable(clap-host
+  about-dialog.hh
+  about-dialog.cc
   application.cc
   application.hh
   audio-settings.cc
