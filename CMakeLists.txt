@@ -9,6 +9,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
 project(CLAP_EXAMPLES C CXX)
 
 set(UsePkgConfig TRUE CACHE BOOL "Use PkgConfig to find RtMidi and RtAudio dependencies")
+set(CLAP_HOST_BUNDLE FALSE CACHE BOOL "Produce a macOS bundle")
 
 set(CMAKE_AUTOMOC ON)
 
