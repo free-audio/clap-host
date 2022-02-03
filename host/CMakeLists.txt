@@ -66,6 +66,7 @@ if (APPLE)
   find_library(AUDIO_TOOLBOX AudioToolbox)
   find_library(CARBON Carbon)
   target_link_libraries(clap-host PRIVATE ${CARBON} ${AUDIO_UNIT} ${AUDIO_TOOLBOX} ${CORE_MIDI} ${CORE_AUDIO} ${CORE_SERVICES} ${CORE_FOUNDATION})
+  set_target_properties(clap-host PROPERTIES MACOSX_BUNDLE TRUE)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

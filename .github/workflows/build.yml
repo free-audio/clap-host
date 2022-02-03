@@ -37,7 +37,7 @@ jobs:
             mono: 'mono'
             triplet: 'x64-osx'
             artifact: 'x86_64-macos'
-            exe_ext: ''
+            exe_ext: '.app'
             build_dir: ninja-vcpkg
 
     env:
