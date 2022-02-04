@@ -17,7 +17,7 @@ Application *Application::_instance = nullptr;
 Q_DECLARE_METATYPE(int32_t)
 Q_DECLARE_METATYPE(uint32_t)
 
-Application::Application(int argc, char **argv)
+Application::Application(int &argc, char **argv)
    : QApplication(argc, argv), _settings(new Settings) {
    assert(!_instance);
    _instance = this;
