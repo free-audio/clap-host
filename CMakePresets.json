@@ -62,7 +62,7 @@
             "name": "base",
             "hidden": true,
             "targets": [
-                "clap-host"
+                "clap-host", "clap-tests"
             ]
         },
         {
