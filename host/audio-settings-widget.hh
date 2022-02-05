@@ -2,6 +2,8 @@
 
 #include <QWidget>
 
+#include <RtAudio.h>
+
 class AudioSettings;
 
 QT_BEGIN_NAMESPACE
@@ -11,10 +13,12 @@ QT_END_NAMESPACE
 class AudioSettingsWidget : public QWidget {
    Q_OBJECT
 public:
-   explicit AudioSettingsWidget(AudioSettings &audioSettings);
+   explicit AudioSettingsWidget(AudioSettings &audioSettings, QWidget *parent = nullptr);
+   ~AudioSettingsWidget() override;
 
 private:
-   void updateApiList();
+   void refresh();
+   void initApiList();
    void updateSampleRateList();
    void updateBufferSizeList();
    void updateDeviceList();
@@ -24,10 +28,15 @@ private:
    void selectedSampleRateChanged(int index);
    void selectedBufferSizeChanged(int index);
 
+   RtAudio::Api getSelectedAudioApi() const;
+
+   void saveSettings();
+
 private:
    AudioSettings &_audioSettings;
    QComboBox *_apiWidget = nullptr;
    QComboBox *_deviceChooser = nullptr;
    QComboBox *_sampleRateChooser = nullptr;
    QComboBox *_bufferSizeChooser = nullptr;
+   std::unique_ptr<RtAudio> _audio;
 };

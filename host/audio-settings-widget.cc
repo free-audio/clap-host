@@ -11,33 +11,13 @@
 #include "audio-settings.hh"
 #include "engine.hh"
 
-static const std::vector<int> BUFFER_SIZES = {32, 48, 64, 96, 128, 192, 256, 384, 512};
-
-AudioSettingsWidget::AudioSettingsWidget(AudioSettings &audioSettings)
-   : _audioSettings(audioSettings) {
+AudioSettingsWidget::AudioSettingsWidget(AudioSettings &audioSettings, QWidget *parent)
+   : QWidget(parent), _audioSettings(audioSettings) {
 
    _apiWidget = new QComboBox(this);
    _deviceChooser = new QComboBox(this);
    _sampleRateChooser = new QComboBox(this);
    _bufferSizeChooser = new QComboBox(this);
-
-   connect(
-      _apiWidget, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::selectedApiChanged);
-
-   connect(_deviceChooser,
-           &QComboBox::currentIndexChanged,
-           this,
-           &AudioSettingsWidget::selectedDeviceChanged);
-
-   connect(_sampleRateChooser,
-           &QComboBox::currentIndexChanged,
-           this,
-           &AudioSettingsWidget::selectedSampleRateChanged);
-
-   connect(_bufferSizeChooser,
-           &QComboBox::currentIndexChanged,
-           this,
-           &AudioSettingsWidget::selectedBufferSizeChanged);
 
    auto layout = new QGridLayout(this);
    layout->addWidget(new QLabel(tr("API")), 0, 0);
@@ -58,25 +38,57 @@ AudioSettingsWidget::AudioSettingsWidget(AudioSettings &audioSettings)
    groupLayout->addWidget(groupBox);
    setLayout(groupLayout);
 
-   updateApiList();
+   initApiList();
+   refresh();
+
+   connect(
+      _apiWidget, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::selectedApiChanged);
+
+   connect(_deviceChooser,
+           &QComboBox::currentIndexChanged,
+           this,
+           &AudioSettingsWidget::selectedDeviceChanged);
+
+   connect(_sampleRateChooser,
+           &QComboBox::currentIndexChanged,
+           this,
+           &AudioSettingsWidget::selectedSampleRateChanged);
+
+   connect(_bufferSizeChooser,
+           &QComboBox::currentIndexChanged,
+           this,
+           &AudioSettingsWidget::selectedBufferSizeChanged);
+}
+
+AudioSettingsWidget::~AudioSettingsWidget() = default;
+
+void AudioSettingsWidget::refresh() {
+   _audio.reset(); // make sure we delete the old one first
+   _audio = std::make_unique<RtAudio>(getSelectedAudioApi());
+
    updateDeviceList();
    updateSampleRateList();
    updateBufferSizeList();
 }
 
-void AudioSettingsWidget::updateApiList() {
+void AudioSettingsWidget::initApiList() {
    _apiWidget->clear();
+
+   auto selectedApi = _audioSettings.deviceReference()._api.toStdString();
 
    std::vector<RtAudio::Api> APIs;
    RtAudio::getCompiledApi(APIs);
    for (const auto &api : APIs) {
       _apiWidget->addItem(QString::fromStdString(RtAudio::getApiDisplayName(api)));
+      if (selectedApi == RtAudio::getApiName(api))
+         _apiWidget->setCurrentIndex(_apiWidget->count() - 1);
    }
 }
 
 void AudioSettingsWidget::updateBufferSizeList() {
    _bufferSizeChooser->clear();
 
+   static const std::vector<int> BUFFER_SIZES = {64, 96, 128, 192, 256, 384, 512, 768, 1024};
    for (size_t i = 0; i < BUFFER_SIZES.size(); ++i) {
       int bs = BUFFER_SIZES[i];
       _bufferSizeChooser->addItem(QString::number(bs));
@@ -88,19 +100,11 @@ void AudioSettingsWidget::updateBufferSizeList() {
 }
 
 void AudioSettingsWidget::updateSampleRateList() {
-   static const std::vector<int> SAMPLE_RATES = {
-      44100,
-      48000,
-      88200,
-      96000,
-      176400,
-      192000,
-   };
-
    _sampleRateChooser->clear();
 
-   for (size_t i = 0; i < SAMPLE_RATES.size(); ++i) {
-      int sr = SAMPLE_RATES[i];
+   auto info = _audio->getDeviceInfo(_deviceChooser->currentIndex());
+   for (size_t i = 0; i < info.sampleRates.size(); ++i) {
+      int sr = info.sampleRates[i];
       _sampleRateChooser->addItem(QString::number(sr));
       if (sr == _audioSettings.sampleRate()) {
          _sampleRateChooser->setCurrentIndex(i);
@@ -112,14 +116,12 @@ void AudioSettingsWidget::updateSampleRateList() {
 void AudioSettingsWidget::updateDeviceList() {
    _deviceChooser->clear();
 
-   auto engine = Application::instance().engine();
-   auto audio = engine->audio();
-
-   auto deviceCount = audio->getDeviceCount();
+   auto deviceCount = _audio->getDeviceCount();
    bool deviceFound = false;
 
+   // Populate the choices
    for (int i = 0; i < deviceCount; ++i) {
-      auto deviceInfo = audio->getDeviceInfo(i);
+      auto deviceInfo = _audio->getDeviceInfo(i);
       QString name = QString::fromStdString(deviceInfo.name);
       _deviceChooser->addItem(name);
 
@@ -131,41 +133,61 @@ void AudioSettingsWidget::updateDeviceList() {
       }
    }
 
+   if (deviceFound)
+      return;
+
    // try to find the device just by its name.
-   for (int i = 0; !deviceFound && i < deviceCount; ++i) {
-      auto deviceInfo = audio->getDeviceInfo(i);
+   for (int i = 0; i < deviceCount; ++i) {
+      auto deviceInfo = _audio->getDeviceInfo(i);
       QString name = QString::fromStdString(deviceInfo.name);
 
       if (_audioSettings.deviceReference()._name == name) {
          _deviceChooser->setCurrentIndex(i);
-         deviceFound = true;
          selectedDeviceChanged(i);
+         return;
       }
    }
 
-   if (!deviceFound) {
-      _deviceChooser->setCurrentIndex(0);
-      selectedDeviceChanged(0);
-   }
+   // Device was not found
+   _deviceChooser->setCurrentIndex(0);
+   selectedDeviceChanged(0);
 }
 
-void AudioSettingsWidget::selectedApiChanged(int index) {}
+RtAudio::Api AudioSettingsWidget::getSelectedAudioApi() const {
+   std::vector<RtAudio::Api> APIs;
+   RtAudio::getCompiledApi(APIs);
+
+   const auto index = _apiWidget->currentIndex();
+   if (index >= APIs.size())
+      return RtAudio::RTAUDIO_DUMMY;
+   return APIs[index];
+}
+
+void AudioSettingsWidget::selectedApiChanged(int index) {
+   refresh();
+   saveSettings();
+}
 
 void AudioSettingsWidget::selectedDeviceChanged(int index) {
-   auto engine = Application::instance().engine();
-   auto audio = engine->audio();
-   auto deviceInfo = audio->getDeviceInfo(index);
+   updateBufferSizeList();
+   updateSampleRateList();
+   saveSettings();
+}
+
+void AudioSettingsWidget::selectedSampleRateChanged(int index) { saveSettings(); }
+
+void AudioSettingsWidget::selectedBufferSizeChanged(int index) { saveSettings(); }
+
+void AudioSettingsWidget::saveSettings() {
+   int index = _deviceChooser->currentIndex();
+   auto deviceInfo = _audio->getDeviceInfo(index);
 
    DeviceReference ref;
+   auto apiName = RtAudio::getApiName(getSelectedAudioApi());
+   ref._api = QString::fromStdString(apiName);
    ref._index = index;
    ref._name = QString::fromStdString(deviceInfo.name);
    _audioSettings.setDeviceReference(ref);
-}
-
-void AudioSettingsWidget::selectedSampleRateChanged(int index) {
    _audioSettings.setSampleRate(_sampleRateChooser->itemText(index).toInt());
-}
-
-void AudioSettingsWidget::selectedBufferSizeChanged(int index) {
    _audioSettings.setBufferSize(_bufferSizeChooser->itemText(index).toInt());
 }

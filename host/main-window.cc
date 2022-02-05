@@ -21,7 +21,6 @@
 
 MainWindow::MainWindow(Application &app)
    : QMainWindow(nullptr), _application(app),
-     _settingsDialog(new SettingsDialog(_application.settings(), this)),
      _pluginViewWindow(new QWindow()),
      _pluginViewWidget(QWidget::createWindowContainer(_pluginViewWindow)) {
 
@@ -32,8 +31,6 @@ MainWindow::MainWindow(Application &app)
    _pluginViewWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
    setMinimumSize(100, 75);
-
-   connect(_settingsDialog, SIGNAL(accepted()), &_application, SLOT(restartEngine()));
 
    auto &pluginHost = app.engine()->pluginHost();
 
@@ -99,9 +96,8 @@ void MainWindow::createMenu() {
 }
 
 void MainWindow::showSettingsDialog() {
-   int result = _settingsDialog->exec();
-   if (result == QDialog::Accepted)
-      _application.restartEngine();
+   SettingsDialog dialog(Application::instance().settings(), this);
+   dialog.exec();
 }
 
 void MainWindow::showPluginParametersWindow() { _pluginParametersWindow->show(); }

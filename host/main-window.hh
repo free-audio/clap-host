@@ -40,7 +40,6 @@ private:
    void showAboutDialog();
 
    Application &   _application;
-   SettingsDialog *_settingsDialog = nullptr;
    QWindow *       _pluginViewWindow = nullptr;
    QWidget *       _pluginViewWidget = nullptr;
 

@@ -33,18 +33,7 @@ Engine::Engine(Application &application)
    connect(&_idleTimer, &QTimer::timeout, this, QOverload<>::of(&Engine::callPluginIdle));
    _idleTimer.start(1000 / 30);
 
-   _midiIn = std::make_unique<RtMidiIn>();
    _midiInBuffer.reserve(512);
-
-#ifdef Q_OS_LINUX
-   _audio = std::make_unique<RtAudio>(RtAudio::LINUX_PULSE);
-#elif defined(Q_OS_MACOS)
-   _audio = std::make_unique<RtAudio>(RtAudio::MACOSX_CORE);
-#elif defined(Q_OS_WINDOWS)
-   _audio = std::make_unique<RtAudio>(RtAudio::WINDOWS_WASAPI);
-#else
-   _audio = std::make_unique<RtAudio>();
-#endif
 }
 
 Engine::~Engine() {
@@ -56,6 +45,8 @@ Engine::~Engine() {
 
 void Engine::start() {
    assert(_state == kStateStopped);
+   assert(!_midiIn);
+   assert(!_audio);
 
    auto &as = _settings.audioSettings();
    const int bufferSize = 4 * 2 * as.bufferSize();
@@ -69,6 +60,7 @@ void Engine::start() {
 
    /* midi */
    try {
+      _midiIn = std::make_unique<RtMidiIn>();
       _midiIn->openPort(_settings.midiSettings().deviceReference()._index);
       _midiIn->ignoreTypes(false, false, false);
    } catch (...) {
@@ -77,10 +69,13 @@ void Engine::start() {
    /* audio */
    try {
       auto &audioSettings = _settings.audioSettings();
+      auto &deviceRef = audioSettings.deviceReference();
       unsigned int bufferSize = audioSettings.bufferSize();
 
+      _audio = std::make_unique<RtAudio>(RtAudio::getCompiledApiByName(deviceRef._api.toStdString()));
+
       RtAudio::StreamParameters outParams;
-      outParams.deviceId = audioSettings.deviceReference()._index;
+      outParams.deviceId = deviceRef._index;
       outParams.firstChannel = 0;
       outParams.nChannels = 2;
 
@@ -108,10 +103,13 @@ void Engine::stop() {
    if (_audio->isStreamOpen()) {
       _audio->stopStream();
       _audio->closeStream();
+      _audio.reset();
    }
 
-   if (_midiIn->isPortOpen())
+   if (_midiIn->isPortOpen()) {
       _midiIn->closePort();
+      _midiIn.reset();
+   }
 
    _state = kStateStopped;
 }

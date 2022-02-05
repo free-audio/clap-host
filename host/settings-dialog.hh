@@ -8,6 +8,7 @@ class SettingsWidget;
 class SettingsDialog : public QDialog {
 public:
    SettingsDialog(Settings &settings, QWidget *parent = nullptr);
+   ~SettingsDialog() override;
 
 private:
    Settings &_settings;
