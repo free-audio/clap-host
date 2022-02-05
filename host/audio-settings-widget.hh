@@ -13,15 +13,21 @@ class AudioSettingsWidget : public QWidget {
 public:
    explicit AudioSettingsWidget(AudioSettings &audioSettings);
 
-signals:
+private:
+   void updateApiList();
+   void updateSampleRateList();
+   void updateBufferSizeList();
+   void updateDeviceList();
 
-public slots:
+   void selectedApiChanged(int index);
    void selectedDeviceChanged(int index);
    void selectedSampleRateChanged(int index);
    void selectedBufferSizeChanged(int index);
 
 private:
    AudioSettings &_audioSettings;
-   QComboBox *    _sampleRateWidget;
-   QComboBox *    _bufferSizeWidget;
+   QComboBox *_apiWidget = nullptr;
+   QComboBox *_deviceChooser = nullptr;
+   QComboBox *_sampleRateChooser = nullptr;
+   QComboBox *_bufferSizeChooser = nullptr;
 };
