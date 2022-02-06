@@ -61,8 +61,10 @@ void Engine::start() {
    /* midi */
    try {
       _midiIn = std::make_unique<RtMidiIn>();
-      _midiIn->openPort(_settings.midiSettings().deviceReference()._index);
-      _midiIn->ignoreTypes(false, false, false);
+      if (_midiIn) {
+         _midiIn->openPort(_settings.midiSettings().deviceReference()._index);
+         _midiIn->ignoreTypes(false, false, false);
+      }
    } catch (...) {
    }
 
@@ -72,24 +74,26 @@ void Engine::start() {
       auto &deviceRef = audioSettings.deviceReference();
       unsigned int bufferSize = audioSettings.bufferSize();
 
-      _audio = std::make_unique<RtAudio>(RtAudio::getCompiledApiByName(deviceRef._api.toStdString()));
+      _audio =
+         std::make_unique<RtAudio>(RtAudio::getCompiledApiByName(deviceRef._api.toStdString()));
+      if (_audio) {
+         RtAudio::StreamParameters outParams;
+         outParams.deviceId = deviceRef._index;
+         outParams.firstChannel = 0;
+         outParams.nChannels = 2;
 
-      RtAudio::StreamParameters outParams;
-      outParams.deviceId = deviceRef._index;
-      outParams.firstChannel = 0;
-      outParams.nChannels = 2;
-
-      _audio->openStream(&outParams,
-                         nullptr,
-                         RTAUDIO_FLOAT32,
-                         audioSettings.sampleRate(),
-                         &bufferSize,
-                         &Engine::audioCallback,
-                         this);
-      _nframes = bufferSize;
-      _state = kStateRunning;
-      _pluginHost->activate(as.sampleRate(), _nframes);
-      _audio->startStream();
+         _audio->openStream(&outParams,
+                            nullptr,
+                            RTAUDIO_FLOAT32,
+                            audioSettings.sampleRate(),
+                            &bufferSize,
+                            &Engine::audioCallback,
+                            this);
+         _nframes = bufferSize;
+         _state = kStateRunning;
+         _pluginHost->activate(as.sampleRate(), _nframes);
+         _audio->startStream();
+      }
    } catch (...) {
    }
 }
