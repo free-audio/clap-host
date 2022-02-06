@@ -45,8 +45,6 @@ Engine::~Engine() {
 
 void Engine::start() {
    assert(_state == kStateStopped);
-   assert(!_midiIn);
-   assert(!_audio);
 
    auto &as = _settings.audioSettings();
    const int bufferSize = 4 * 2 * as.bufferSize();
@@ -60,6 +58,7 @@ void Engine::start() {
 
    /* midi */
    try {
+      _midiIn.reset();
       _midiIn = std::make_unique<RtMidiIn>();
       if (_midiIn) {
          _midiIn->openPort(_settings.midiSettings().deviceReference()._index);
@@ -74,6 +73,7 @@ void Engine::start() {
       auto &deviceRef = audioSettings.deviceReference();
       unsigned int bufferSize = audioSettings.bufferSize();
 
+      _audio.reset();
       _audio =
          std::make_unique<RtAudio>(RtAudio::getCompiledApiByName(deviceRef._api.toStdString()));
       if (_audio) {
