@@ -62,6 +62,9 @@ private:
                             RtAudioStreamStatus status,
                             void *data);
 
+   void allocateBuffers(size_t bufferSize);
+   void freeBuffers();
+
    Application &_application;
    Settings &_settings;
    WId _parentWindow;

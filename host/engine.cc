@@ -43,6 +43,28 @@ Engine::~Engine() {
    std::clog << "     ####### ENGINE STOPPED #########" << std::endl;
 }
 
+void Engine::allocateBuffers(size_t bufferSize) {
+   freeBuffers();
+
+   _inputs[0] = (float *)std::calloc(1, bufferSize);
+   _inputs[1] = (float *)std::calloc(1, bufferSize);
+   _outputs[0] = (float *)std::calloc(1, bufferSize);
+   _outputs[1] = (float *)std::calloc(1, bufferSize);
+}
+
+void Engine::freeBuffers()
+{
+   free(_inputs[0]);
+   free(_inputs[1]);
+   free(_outputs[0]);
+   free(_outputs[1]);
+
+   _inputs[0] = nullptr;
+   _inputs[1] = nullptr;
+   _outputs[0] = nullptr;
+   _outputs[1] = nullptr;
+}
+
 void Engine::start() {
    assert(_state == kStateStopped);
 
@@ -63,7 +85,10 @@ void Engine::start() {
    /* audio */
    try {
       auto &deviceRef = as.deviceReference();
-      unsigned int bufferSize = as.bufferSize();
+      unsigned int bufferSize = std::min<int>(32, as.bufferSize());
+
+      // _audio->openStream() immediately calls process, so just allocate a big buffer for now...
+      allocateBuffers(32 * 1024);
 
       _audio.reset();
       _audio =
@@ -82,10 +107,6 @@ void Engine::start() {
                             &Engine::audioCallback,
                             this);
          _nframes = bufferSize;
-         _inputs[0] = (float *)calloc(1, bufferSize);
-         _inputs[1] = (float *)calloc(1, bufferSize);
-         _outputs[0] = (float *)calloc(1, bufferSize);
-         _outputs[1] = (float *)calloc(1, bufferSize);
 
          _state = kStateRunning;
 
@@ -118,12 +139,14 @@ void Engine::stop() {
       _midiIn.reset();
    }
 
+   freeBuffers();
+
    _state = kStateStopped;
 }
 
 int Engine::audioCallback(void *outputBuffer,
                           void *inputBuffer,
-                          unsigned int frameCount,
+                          const unsigned int frameCount,
                           double currentTime,
                           RtAudioStreamStatus status,
                           void *data) {
@@ -139,7 +162,7 @@ int Engine::audioCallback(void *outputBuffer,
 
    // copy input
    if (in) {
-      for (int i = 0; i < thiz->_nframes; ++i) {
+      for (int i = 0; i < frameCount; ++i) {
          thiz->_inputs[0][i] = in[2 * i];
          thiz->_inputs[1][i] = in[2 * i + 1];
       }
@@ -162,10 +185,10 @@ int Engine::audioCallback(void *outputBuffer,
       double deltaMs = currentTime - msgTime;
       double deltaSample = (deltaMs * thiz->_sampleRate) / 1000;
 
-      if (deltaSample >= thiz->_nframes)
-         deltaSample = thiz->_nframes - 1;
+      if (deltaSample >= frameCount)
+         deltaSample = frameCount - 1;
 
-      int32_t sampleOffset = thiz->_nframes - deltaSample;
+      int32_t sampleOffset = frameCount - deltaSample;
 
       switch (eventType) {
       case MIDI_STATUS_NOTE_ON:
@@ -202,7 +225,7 @@ int Engine::audioCallback(void *outputBuffer,
    thiz->_pluginHost->process();
 
    // copy output
-   for (int i = 0; i < thiz->_nframes; ++i) {
+   for (int i = 0; i < frameCount; ++i) {
       out[2 * i] = thiz->_outputs[0][i];
       out[2 * i + 1] = thiz->_outputs[1][i];
    }
