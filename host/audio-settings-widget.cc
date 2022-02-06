@@ -89,28 +89,41 @@ void AudioSettingsWidget::updateBufferSizeList() {
    _bufferSizeChooser->clear();
 
    static const std::vector<int> BUFFER_SIZES = {64, 96, 128, 192, 256, 384, 512, 768, 1024};
+
+   bool didSelectBufferSize = false;
    for (size_t i = 0; i < BUFFER_SIZES.size(); ++i) {
       int bs = BUFFER_SIZES[i];
       _bufferSizeChooser->addItem(QString::number(bs));
       if (bs == _audioSettings.bufferSize()) {
          _bufferSizeChooser->setCurrentIndex(i);
-         selectedBufferSizeChanged(i);
+         didSelectBufferSize = true;
       }
    }
+
+   if (!didSelectBufferSize)
+      _bufferSizeChooser->setCurrentIndex(4);
 }
 
 void AudioSettingsWidget::updateSampleRateList() {
    _sampleRateChooser->clear();
 
+   bool didSelectSampleRate = false;
    auto info = _audio->getDeviceInfo(_deviceChooser->currentIndex());
    for (size_t i = 0; i < info.sampleRates.size(); ++i) {
       int sr = info.sampleRates[i];
       _sampleRateChooser->addItem(QString::number(sr));
       if (sr == _audioSettings.sampleRate()) {
          _sampleRateChooser->setCurrentIndex(i);
-         selectedSampleRateChanged(i);
+         didSelectSampleRate = true;
       }
    }
+
+   if (didSelectSampleRate)
+      return;
+
+   for (size_t i = 0; i < info.sampleRates.size(); ++i)
+      if (info.sampleRates[i] == info.preferredSampleRate)
+         _sampleRateChooser->setCurrentIndex(i);
 }
 
 void AudioSettingsWidget::updateDeviceList() {
@@ -129,7 +142,6 @@ void AudioSettingsWidget::updateDeviceList() {
           _audioSettings.deviceReference()._name == name) {
          _deviceChooser->setCurrentIndex(i);
          deviceFound = true;
-         selectedDeviceChanged(i);
       }
    }
 
@@ -143,14 +155,12 @@ void AudioSettingsWidget::updateDeviceList() {
 
       if (_audioSettings.deviceReference()._name == name) {
          _deviceChooser->setCurrentIndex(i);
-         selectedDeviceChanged(i);
          return;
       }
    }
 
    // Device was not found
    _deviceChooser->setCurrentIndex(0);
-   selectedDeviceChanged(0);
 }
 
 RtAudio::Api AudioSettingsWidget::getSelectedAudioApi() const {
@@ -188,6 +198,6 @@ void AudioSettingsWidget::saveSettings() {
    ref._index = index;
    ref._name = QString::fromStdString(deviceInfo.name);
    _audioSettings.setDeviceReference(ref);
-   _audioSettings.setSampleRate(_sampleRateChooser->itemText(index).toInt());
-   _audioSettings.setBufferSize(_bufferSizeChooser->itemText(index).toInt());
+   _audioSettings.setSampleRate(_sampleRateChooser->currentText().toInt());
+   _audioSettings.setBufferSize(_bufferSizeChooser->currentText().toInt());
 }
