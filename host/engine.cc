@@ -65,6 +65,7 @@ void Engine::start() {
          _midiIn->ignoreTypes(false, false, false);
       }
    } catch (...) {
+      _midiIn.reset();
    }
 
    /* audio */
@@ -95,6 +96,7 @@ void Engine::start() {
          _audio->startStream();
       }
    } catch (...) {
+      stop();
    }
 }
 
@@ -104,14 +106,17 @@ void Engine::stop() {
    if (_state == kStateRunning)
       _state = kStateStopping;
 
-   if (_audio->isStreamOpen()) {
-      _audio->stopStream();
-      _audio->closeStream();
+   if (_audio) {
+      if (_audio->isStreamOpen()) {
+         _audio->stopStream();
+         _audio->closeStream();
+      }
       _audio.reset();
    }
 
-   if (_midiIn->isPortOpen()) {
-      _midiIn->closePort();
+   if (_midiIn) {
+      if (_midiIn->isPortOpen())
+         _midiIn->closePort();
       _midiIn.reset();
    }
 
@@ -146,7 +151,7 @@ int Engine::audioCallback(void *outputBuffer,
 
    MidiSettings &ms = thiz->_settings.midiSettings();
    auto &midiBuf = thiz->_midiInBuffer;
-   while (thiz->_midiIn->isPortOpen()) {
+   while (thiz->_midiIn && thiz->_midiIn->isPortOpen()) {
       auto msgTime = thiz->_midiIn->getMessage(&midiBuf);
       if (midiBuf.empty())
          break;
