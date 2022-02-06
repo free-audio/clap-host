@@ -39,4 +39,5 @@ private:
    QComboBox *_sampleRateChooser = nullptr;
    QComboBox *_bufferSizeChooser = nullptr;
    std::unique_ptr<RtAudio> _audio;
+   bool _isRefreshingDeviceList = false;
 };

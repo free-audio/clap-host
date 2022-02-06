@@ -66,9 +66,13 @@ void AudioSettingsWidget::refresh() {
    _audio.reset(); // make sure we delete the old one first
    _audio = std::make_unique<RtAudio>(getSelectedAudioApi());
 
+   _isRefreshingDeviceList = true;
+
    updateDeviceList();
    updateSampleRateList();
    updateBufferSizeList();
+
+   _isRefreshingDeviceList = false;
 }
 
 void AudioSettingsWidget::initApiList() {
@@ -174,21 +178,40 @@ RtAudio::Api AudioSettingsWidget::getSelectedAudioApi() const {
 }
 
 void AudioSettingsWidget::selectedApiChanged(int index) {
+   if (_isRefreshingDeviceList)
+      return;
+
    refresh();
    saveSettings();
 }
 
 void AudioSettingsWidget::selectedDeviceChanged(int index) {
+   if (_isRefreshingDeviceList)
+      return;
+
    updateBufferSizeList();
    updateSampleRateList();
    saveSettings();
 }
 
-void AudioSettingsWidget::selectedSampleRateChanged(int index) { saveSettings(); }
+void AudioSettingsWidget::selectedSampleRateChanged(int index) {
+   if (_isRefreshingDeviceList)
+      return;
 
-void AudioSettingsWidget::selectedBufferSizeChanged(int index) { saveSettings(); }
+   saveSettings();
+}
+
+void AudioSettingsWidget::selectedBufferSizeChanged(int index) {
+   if (_isRefreshingDeviceList)
+      return;
+
+   saveSettings();
+}
 
 void AudioSettingsWidget::saveSettings() {
+   if (_isRefreshingDeviceList)
+      return;
+
    int index = _deviceChooser->currentIndex();
    auto deviceInfo = _audio->getDeviceInfo(index);
 
