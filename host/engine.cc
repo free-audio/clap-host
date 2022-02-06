@@ -47,14 +47,6 @@ void Engine::start() {
    assert(_state == kStateStopped);
 
    auto &as = _settings.audioSettings();
-   const int bufferSize = 4 * 2 * as.bufferSize();
-
-   _inputs[0] = (float *)calloc(1, bufferSize);
-   _inputs[1] = (float *)calloc(1, bufferSize);
-   _outputs[0] = (float *)calloc(1, bufferSize);
-   _outputs[1] = (float *)calloc(1, bufferSize);
-
-   _pluginHost->setPorts(2, _inputs, 2, _outputs);
 
    /* midi */
    try {
@@ -70,9 +62,8 @@ void Engine::start() {
 
    /* audio */
    try {
-      auto &audioSettings = _settings.audioSettings();
-      auto &deviceRef = audioSettings.deviceReference();
-      unsigned int bufferSize = audioSettings.bufferSize();
+      auto &deviceRef = as.deviceReference();
+      unsigned int bufferSize = as.bufferSize();
 
       _audio.reset();
       _audio =
@@ -86,12 +77,19 @@ void Engine::start() {
          _audio->openStream(&outParams,
                             nullptr,
                             RTAUDIO_FLOAT32,
-                            audioSettings.sampleRate(),
+                            as.sampleRate(),
                             &bufferSize,
                             &Engine::audioCallback,
                             this);
          _nframes = bufferSize;
+         _inputs[0] = (float *)calloc(1, bufferSize);
+         _inputs[1] = (float *)calloc(1, bufferSize);
+         _outputs[0] = (float *)calloc(1, bufferSize);
+         _outputs[1] = (float *)calloc(1, bufferSize);
+
          _state = kStateRunning;
+
+         _pluginHost->setPorts(2, _inputs, 2, _outputs);
          _pluginHost->activate(as.sampleRate(), _nframes);
          _audio->startStream();
       }
