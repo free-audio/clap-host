@@ -106,8 +106,11 @@ void MainWindow::showPluginQuickControlsWindow() { _pluginQuickControlsWindow->s
 WId MainWindow::getEmbedWindowId() { return _pluginViewWidget->winId(); }
 
 void MainWindow::resizePluginView(int width, int height) {
-   _pluginViewWidget->setMinimumSize(width, height);
-   _pluginViewWidget->setMaximumSize(width, height);
+   auto ratio = _pluginViewWidget->devicePixelRatio();
+   auto sw = width / ratio;
+   auto sh = height / ratio;
+   _pluginViewWidget->setMinimumSize(sw, sh);
+   _pluginViewWidget->setMaximumSize(sw, sh);
    _pluginViewWidget->show();
    adjustSize();
 }
