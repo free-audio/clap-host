@@ -764,6 +764,17 @@ void PluginHost::process() {
    if (_plugin && _plugin->process && isPluginProcessing())
       status = _plugin->process(_plugin, &_process);
 
+   handlePluginOutputEvents();
+
+   _evOut.clear();
+   _evIn.clear();
+
+   _engineToAppValueQueue.producerDone();
+   g_thread_type = ThreadType::Unknown;
+}
+
+void PluginHost::handlePluginOutputEvents()
+{
    for (uint32_t i = 0; i < _evOut.size(); ++i) {
       auto h = _evOut.get(i);
       switch (h->type) {
@@ -789,11 +800,22 @@ void PluginHost::process() {
       }
       }
    }
-   _evOut.clear();
-   _evIn.clear();
+}
 
-   _engineToAppValueQueue.producerDone();
-   g_thread_type = ThreadType::Unknown;
+void PluginHost::paramFlushOnMainThread() {
+   checkForMainThread();
+
+   assert(!isPluginActive());
+
+   _scheduleParamFlush = false;
+
+   _evIn.clear();
+   _evOut.clear();
+
+   _pluginParams->flush(_plugin, _evIn.clapInputEvents(), _evOut.clapOutputEvents());
+   handlePluginOutputEvents();
+
+   _evOut.clear();
 }
 
 void PluginHost::idle() {
@@ -815,6 +837,10 @@ void PluginHost::idle() {
          it->second->setValue(value.value);
          it->second->setIsAdjusting(value.isAdjusting);
       });
+
+   if (_scheduleParamFlush && !isPluginActive()) {
+      paramFlushOnMainThread();
+   }
 
    if (_scheduleMainThreadCallback) {
       _scheduleMainThreadCallback = false;
@@ -1012,7 +1038,16 @@ void PluginHost::clapParamsClear(const clap_host *host,
 }
 
 void PluginHost::clapParamsRequestFlush(const clap_host *host) {
-   // Nothing to do we always flush and always process
+   auto self = fromHost(host);
+
+   if (!self->isPluginActive() && clapIsMainThread(host)) {
+      // Perform the flush immediately
+      self->paramFlushOnMainThread();
+      return;
+   }
+
+   self->_scheduleParamFlush = true;
+   return;
 }
 
 double PluginHost::getParamValue(const clap_param_info &info) {

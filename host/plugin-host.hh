@@ -137,6 +137,9 @@ private:
 
    bool canUsePluginGui() const noexcept;
 
+   void paramFlushOnMainThread();
+   void handlePluginOutputEvents();
+
 private:
    Engine &_engine;
 
@@ -282,6 +285,8 @@ private:
    bool _scheduleDeactivate = false;
 
    bool _scheduleProcess = true;
+
+   bool _scheduleParamFlush = false;
 
    bool _isGuiCreated = false;
    bool _isGuiVisible = false;
