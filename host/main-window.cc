@@ -105,8 +105,16 @@ void MainWindow::showPluginQuickControlsWindow() { _pluginQuickControlsWindow->s
 
 WId MainWindow::getEmbedWindowId() { return _pluginViewWidget->winId(); }
 
+static bool wantsLogicalSize() noexcept {
+#ifdef Q_OS_MACOS
+   return true;
+#else
+   return false;
+#endif
+}
+
 void MainWindow::resizePluginView(int width, int height) {
-   auto ratio = _pluginViewWidget->devicePixelRatio();
+   auto ratio = wantsLogicalSize() ? 1 : _pluginViewWidget->devicePixelRatio();
    auto sw = width / ratio;
    auto sh = height / ratio;
    _pluginViewWidget->setMinimumSize(sw, sh);
