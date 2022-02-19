@@ -300,8 +300,9 @@ void PluginHost::setParentWindow(WId parentWindow) {
    if (_pluginGuiWin32)
       didAttach = _pluginGuiWin32->attach(_plugin, (clap_hwnd)parentWindow);
 #endif
-   // else (_pluginGuiFreeStanding)
-   //   didAttach = _pluginGuiFreeStanding->open(_plugin);
+
+   if (!didAttach && _pluginGuiFreeStanding)
+     didAttach = _pluginGuiFreeStanding->open(_plugin);
 
    if (!didAttach) {
       qWarning() << "the plugin failed to attach its gui";
