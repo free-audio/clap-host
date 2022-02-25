@@ -77,10 +77,12 @@ PluginParametersWidget::PluginParametersWidget(QWidget *parent, PluginHost &plug
 
    // Tree
    _rootModuleItem = new ModuleTreeItem(_treeWidget);
+   _rootModuleItem->setExpanded(true);
+
    _treeWidget->addTopLevelItem(_rootModuleItem);
    _treeWidget->setHeaderHidden(true);
    _treeWidget->setAnimated(true);
-   _treeWidget->setRootIsDecorated(true);
+   _treeWidget->setRootIsDecorated(false);
    _treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
    _treeWidget->setSelectionBehavior(QAbstractItemView::SelectItems);
    _treeWidget->setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
