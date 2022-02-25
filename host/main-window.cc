@@ -27,9 +27,8 @@ MainWindow::MainWindow(Application &app)
 
    setCentralWidget(_pluginViewWidget);
    _pluginViewWidget->show();
-   _pluginViewWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-   setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-   setMinimumSize(100, 75);
+   _pluginViewWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+   setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
    auto &pluginHost = app.engine()->pluginHost();
 
@@ -110,8 +109,7 @@ void MainWindow::resizePluginView(int width, int height) {
    auto ratio = wantsLogicalSize() ? 1 : _pluginViewWidget->devicePixelRatio();
    auto sw = width / ratio;
    auto sh = height / ratio;
-   _pluginViewWidget->setMinimumSize(sw, sh);
-   _pluginViewWidget->setMaximumSize(sw, sh);
+   _pluginViewWidget->setFixedSize(sw, sh);
    _pluginViewWidget->show();
    adjustSize();
 }
