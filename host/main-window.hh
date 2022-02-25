@@ -8,6 +8,8 @@ class PluginParametersWidget;
 class PluginQuickControlsWidget;
 
 class MainWindow : public QMainWindow {
+   using super = QMainWindow;
+
    Q_OBJECT
 
 public:
@@ -30,6 +32,9 @@ public:
    void hidePluginWindow() {
       _pluginViewWidget->hide();
    }
+
+protected:
+   void closeEvent(QCloseEvent *event) override;
 
 private:
    void createMenu();

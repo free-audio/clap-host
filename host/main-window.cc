@@ -20,7 +20,7 @@
 #include "settings.hh"
 
 MainWindow::MainWindow(Application &app)
-   : QMainWindow(nullptr), _application(app), _pluginViewWindow(new QWindow()),
+   : super(nullptr), _application(app), _pluginViewWindow(new QWindow()),
      _pluginViewWidget(QWidget::createWindowContainer(_pluginViewWindow)) {
 
    createMenu();
@@ -141,4 +141,10 @@ void MainWindow::scalePluginWindow() {
 void MainWindow::showAboutDialog() {
    AboutDialog dialog(this);
    dialog.exec();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+   super::closeEvent(event);
+   qApp->quit();
 }
