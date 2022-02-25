@@ -4,8 +4,6 @@
 
 static const char DEVICE_NAME_KEY[] = "Midi/DeviceName";
 static const char DEVICE_INDEX_KEY[] = "Midi/DeviceIndex";
-static const char LATCH_KEY[] = "Midi/Latch";
-static const char ARP_KEY[] = "Midi/Arp";
 
 MidiSettings::MidiSettings() {}
 
