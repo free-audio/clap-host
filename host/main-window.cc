@@ -20,8 +20,7 @@
 #include "settings.hh"
 
 MainWindow::MainWindow(Application &app)
-   : QMainWindow(nullptr), _application(app),
-     _pluginViewWindow(new QWindow()),
+   : QMainWindow(nullptr), _application(app), _pluginViewWindow(new QWindow()),
      _pluginViewWidget(QWidget::createWindowContainer(_pluginViewWindow)) {
 
    createMenu();
@@ -34,14 +33,8 @@ MainWindow::MainWindow(Application &app)
 
    auto &pluginHost = app.engine()->pluginHost();
 
-   _pluginParametersWindow = new QMainWindow(this);
-   _pluginParametersWidget = new PluginParametersWidget(_pluginParametersWindow, pluginHost);
-   _pluginParametersWindow->setCentralWidget(_pluginParametersWidget);
-
-   _pluginQuickControlsWindow = new QMainWindow(this);
-   _pluginQuickControlsWidget =
-      new PluginQuickControlsWidget(_pluginQuickControlsWindow, pluginHost);
-   _pluginQuickControlsWindow->setCentralWidget(_pluginQuickControlsWidget);
+   _pluginParametersWidget = new PluginParametersWidget(nullptr, pluginHost);
+   _pluginQuickControlsWidget = new PluginQuickControlsWidget(nullptr, pluginHost);
 }
 
 MainWindow::~MainWindow() {}
@@ -100,8 +93,8 @@ void MainWindow::showSettingsDialog() {
    dialog.exec();
 }
 
-void MainWindow::showPluginParametersWindow() { _pluginParametersWindow->show(); }
-void MainWindow::showPluginQuickControlsWindow() { _pluginQuickControlsWindow->show(); }
+void MainWindow::showPluginParametersWindow() { _pluginParametersWidget->show(); }
+void MainWindow::showPluginQuickControlsWindow() { _pluginQuickControlsWidget->show(); }
 
 WId MainWindow::getEmbedWindowId() { return _pluginViewWidget->winId(); }
 
@@ -123,8 +116,7 @@ void MainWindow::resizePluginView(int width, int height) {
    adjustSize();
 }
 
-void MainWindow::loadNativePluginPreset()
-{
+void MainWindow::loadNativePluginPreset() {
    auto file = QFileDialog::getOpenFileName(this, tr("Load Plugin Native Preset"));
    if (file.isEmpty())
       return;
@@ -132,25 +124,21 @@ void MainWindow::loadNativePluginPreset()
    _application.engine()->pluginHost().loadNativePluginPreset(file.toStdString());
 }
 
-void MainWindow::togglePluginWindowVisibility()
-{
+void MainWindow::togglePluginWindowVisibility() {
    bool isVisible = !_pluginViewWidget->isVisible();
    _pluginViewWidget->setVisible(isVisible);
    _application.engine()->pluginHost().setPluginWindowVisibility(isVisible);
 }
 
-void MainWindow::recreatePluginWindow()
-{
+void MainWindow::recreatePluginWindow() {
    _application.engine()->pluginHost().setParentWindow(getEmbedWindowId());
 }
 
-void MainWindow::scalePluginWindow()
-{
+void MainWindow::scalePluginWindow() {
    // TODO
 }
 
-void MainWindow::showAboutDialog()
-{
+void MainWindow::showAboutDialog() {
    AboutDialog dialog(this);
    dialog.exec();
 }

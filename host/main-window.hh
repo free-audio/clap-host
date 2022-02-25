@@ -43,9 +43,6 @@ private:
    QWindow *       _pluginViewWindow = nullptr;
    QWidget *       _pluginViewWidget = nullptr;
 
-   QMainWindow *           _pluginParametersWindow = nullptr;
    PluginParametersWidget *_pluginParametersWidget = nullptr;
-
-   QMainWindow *              _pluginQuickControlsWindow = nullptr;
    PluginQuickControlsWidget *_pluginQuickControlsWidget = nullptr;
 };
