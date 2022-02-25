@@ -302,7 +302,7 @@ void PluginHost::setParentWindow(WId parentWindow) {
 #endif
 
    if (!didAttach && _pluginGuiFreeStanding)
-     didAttach = _pluginGuiFreeStanding->open(_plugin);
+      didAttach = _pluginGuiFreeStanding->open(_plugin);
 
    if (!didAttach) {
       qWarning() << "the plugin failed to attach its gui";
@@ -311,7 +311,7 @@ void PluginHost::setParentWindow(WId parentWindow) {
       return;
    }
 
-   //Application::instance().processEvents();
+   // Application::instance().processEvents();
 
    setPluginWindowVisibility(true);
 }
@@ -774,8 +774,7 @@ void PluginHost::process() {
    g_thread_type = ThreadType::Unknown;
 }
 
-void PluginHost::handlePluginOutputEvents()
-{
+void PluginHost::handlePluginOutputEvents() {
    for (uint32_t i = 0; i < _evOut.size(); ++i) {
       auto h = _evOut.get(i);
       switch (h->type) {
@@ -837,6 +836,8 @@ void PluginHost::idle() {
 
          it->second->setValue(value.value);
          it->second->setIsAdjusting(value.isAdjusting);
+
+         emit paramAdjusted(param_id);
       });
 
    if (_scheduleParamFlush && !isPluginActive()) {

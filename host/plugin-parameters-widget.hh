@@ -61,6 +61,7 @@ signals:
 
 private:
    void computeDataModel();
+   void paramAdjustedFromPlugin(clap_id paramId);
    void selectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
    void connectToParam(PluginParam *param);

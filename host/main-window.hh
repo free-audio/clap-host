@@ -25,13 +25,9 @@ public:
    void showPluginQuickControlsWindow();
    void resizePluginView(int width, int height);
 
-   void showPluginWindow() {
-      _pluginViewWidget->show();
-   }
+   void showPluginWindow() { _pluginViewWidget->show(); }
 
-   void hidePluginWindow() {
-      _pluginViewWidget->hide();
-   }
+   void hidePluginWindow() { _pluginViewWidget->hide(); }
 
 protected:
    void closeEvent(QCloseEvent *event) override;
@@ -44,9 +40,9 @@ private:
    void scalePluginWindow();
    void showAboutDialog();
 
-   Application &   _application;
-   QWindow *       _pluginViewWindow = nullptr;
-   QWidget *       _pluginViewWidget = nullptr;
+   Application &_application;
+   QWindow *_pluginViewWindow = nullptr;
+   QWidget *_pluginViewWidget = nullptr;
 
    PluginParametersWidget *_pluginParametersWidget = nullptr;
    PluginQuickControlsWidget *_pluginQuickControlsWidget = nullptr;

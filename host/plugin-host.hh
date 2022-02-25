@@ -14,8 +14,8 @@
 #include <QWidget>
 
 #include <clap/clap.h>
-#include <clap/helpers/reducing-param-queue.hh>
 #include <clap/helpers/event-list.hh>
+#include <clap/helpers/reducing-param-queue.hh>
 
 #include "engine.hh"
 #include "plugin-param.hh"
@@ -79,6 +79,7 @@ signals:
    void paramsChanged();
    void quickControlsPagesChanged();
    void quickControlsSelectedPageChanged();
+   void paramAdjusted(clap_id paramId);
 
 private:
    static PluginHost *fromHost(const clap_host *host);
@@ -96,7 +97,8 @@ private:
    static bool clapIsAudioThread(const clap_host *host);
 
    static void clapParamsRescan(const clap_host *host, clap_param_rescan_flags flags);
-   static void clapParamsClear(const clap_host *host, clap_id param_id, clap_param_clear_flags flags);
+   static void
+   clapParamsClear(const clap_host *host, clap_id param_id, clap_param_clear_flags flags);
    static void clapParamsRequestFlush(const clap_host *host);
    void scanParams();
    void scanParam(int32_t index);
@@ -248,7 +250,7 @@ private:
    std::unordered_map<clap_id, bool> _isAdjusting;
 
    std::vector<std::unique_ptr<clap_quick_controls_page>> _quickControlsPages;
-   std::unordered_map<clap_id, clap_quick_controls_page*> _quickControlsPagesIndex;
+   std::unordered_map<clap_id, clap_quick_controls_page *> _quickControlsPagesIndex;
    clap_id _quickControlsSelectedPage = CLAP_INVALID_ID;
 
    /* delayed actions */

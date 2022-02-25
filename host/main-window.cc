@@ -143,8 +143,7 @@ void MainWindow::showAboutDialog() {
    dialog.exec();
 }
 
-void MainWindow::closeEvent(QCloseEvent *event)
-{
+void MainWindow::closeEvent(QCloseEvent *event) {
    super::closeEvent(event);
    qApp->quit();
 }

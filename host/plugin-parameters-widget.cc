@@ -88,6 +88,10 @@ PluginParametersWidget::PluginParametersWidget(QWidget *parent, PluginHost &plug
    _treeWidget->setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
    connect(
       &_pluginHost, &PluginHost::paramsChanged, this, &PluginParametersWidget::computeDataModel);
+   connect(&_pluginHost,
+           &PluginHost::paramAdjusted,
+           this,
+           &PluginParametersWidget::paramAdjustedFromPlugin);
    connect(_treeWidget,
            &QTreeWidget::currentItemChanged,
            this,
@@ -127,7 +131,10 @@ PluginParametersWidget::PluginParametersWidget(QWidget *parent, PluginHost &plug
    _modulationSlider->setMinimum(-SLIDER_RANGE);
    _modulationSlider->setMaximum(SLIDER_RANGE);
    _modulationSlider->setOrientation(Qt::Horizontal);
-   connect(_modulationSlider, &QSlider::valueChanged, this, &PluginParametersWidget::sliderModulationChanged);
+   connect(_modulationSlider,
+           &QSlider::valueChanged,
+           this,
+           &PluginParametersWidget::sliderModulationChanged);
 
    auto formLayout = new QFormLayout(infoWidget);
    formLayout->addRow(tr("id"), _idLabel);
@@ -162,6 +169,13 @@ PluginParametersWidget::PluginParametersWidget(QWidget *parent, PluginHost &plug
 
    computeDataModel();
    updateParamInfo();
+}
+
+void PluginParametersWidget::paramAdjustedFromPlugin(clap_id paramId) {
+   auto it = _idToParamTreeItem.find(paramId);
+   if (it == _idToParamTreeItem.end())
+      return;
+   _treeWidget->setCurrentItem(it->second.get());
 }
 
 void PluginParametersWidget::computeDataModel() {
@@ -304,9 +318,9 @@ void PluginParametersWidget::updateParamValue() {
    updateParamValueText();
 }
 
-void PluginParametersWidget::updateParamValueText()
-{
-   _valueLabel->setText(_pluginHost.paramValueToText(_currentParam->info().id, _currentParam->value()));
+void PluginParametersWidget::updateParamValueText() {
+   _valueLabel->setText(
+      _pluginHost.paramValueToText(_currentParam->info().id, _currentParam->value()));
 }
 
 void PluginParametersWidget::updateParamModulation() {
