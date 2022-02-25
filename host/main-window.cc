@@ -77,10 +77,6 @@ void MainWindow::createMenu() {
            &QAction::triggered,
            this,
            &MainWindow::recreatePluginWindow);
-   connect(windowsMenu->addAction(tr("Scale Plugin Window")),
-           &QAction::triggered,
-           this,
-           &MainWindow::scalePluginWindow);
 
    QMenu *helpMenu = menuBar->addMenu(tr("Help"));
    connect(
@@ -130,10 +126,6 @@ void MainWindow::togglePluginWindowVisibility() {
 
 void MainWindow::recreatePluginWindow() {
    _application.engine()->pluginHost().setParentWindow(getEmbedWindowId());
-}
-
-void MainWindow::scalePluginWindow() {
-   // TODO
 }
 
 void MainWindow::showAboutDialog() {

@@ -37,7 +37,6 @@ private:
 
    void togglePluginWindowVisibility();
    void recreatePluginWindow();
-   void scalePluginWindow();
    void showAboutDialog();
 
    Application &_application;
