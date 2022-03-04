@@ -152,10 +152,6 @@ void PluginHost::initPluginExtensions() {
    initPluginExtension(_pluginQuickControls, CLAP_EXT_QUICK_CONTROLS);
    initPluginExtension(_pluginAudioPorts, CLAP_EXT_AUDIO_PORTS);
    initPluginExtension(_pluginGui, CLAP_EXT_GUI);
-   initPluginExtension(_pluginGuiX11, CLAP_EXT_GUI_X11);
-   initPluginExtension(_pluginGuiWin32, CLAP_EXT_GUI_WIN32);
-   initPluginExtension(_pluginGuiCocoa, CLAP_EXT_GUI_COCOA);
-   initPluginExtension(_pluginGuiFreeStanding, CLAP_EXT_GUI_FREE_STANDING);
    initPluginExtension(_pluginTimerSupport, CLAP_EXT_TIMER_SUPPORT);
    initPluginExtension(_pluginPosixFdSupport, CLAP_EXT_POSIX_FD_SUPPORT);
    initPluginExtension(_pluginThreadPool, CLAP_EXT_THREAD_POOL);
@@ -182,10 +178,6 @@ void PluginHost::unload() {
    _plugin->destroy(_plugin);
    _plugin = nullptr;
    _pluginGui = nullptr;
-   _pluginGuiX11 = nullptr;
-   _pluginGuiCocoa = nullptr;
-   _pluginGuiWin32 = nullptr;
-   _pluginGuiFreeStanding = nullptr;
    _pluginTimerSupport = nullptr;
    _pluginPosixFdSupport = nullptr;
    _pluginThreadPool = nullptr;
@@ -254,6 +246,18 @@ void PluginHost::setPorts(int numInputs, float **inputs, int numOutputs, float *
    _audioOut.data64 = nullptr;
    _audioOut.constant_mask = 0;
    _audioOut.latency = 0;
+}
+
+uint32_t PluginHost::getCurrentClapGuiApi() {
+#if defined(Q_OS_LINUX)
+   return CLAP_GUI_API_X11;
+#elif defined(Q_OS_WIN32)
+   return CLAP_GUI_API_WIN32;
+#elif defined(Q_OS_COCOA)
+   return CLAP_GUI_API_COCOA;
+#else
+#   error "unsupported platform"
+#endif
 }
 
 void PluginHost::setParentWindow(WId parentWindow) {
@@ -1260,6 +1264,7 @@ QString PluginHost::paramValueToText(clap_id paramId, double value) {
 
 bool PluginHost::canUsePluginGui() const noexcept {
    return _pluginGui && _pluginGui->create && _pluginGui->destroy && _pluginGui->can_resize &&
-          _pluginGui->get_size && _pluginGui->round_size && _pluginGui->round_size &&
-          _pluginGui->set_size && _pluginGui->set_scale && _pluginGui->hide && _pluginGui->show;
+          _pluginGui->get_size && _pluginGui->adjust_size && _pluginGui->set_size &&
+          _pluginGui->set_scale && _pluginGui->hide && _pluginGui->show && _pluginGui->attach &&
+          _pluginGui->set_transient && _pluginGui->suggest_title && _pluginGui->is_api_supported;
 }

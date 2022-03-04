@@ -97,7 +97,7 @@ private:
    QLabel *_isHiddenLabel = nullptr;
    QLabel *_isBypassLabel = nullptr;
    QLabel *_isSteppedLabel = nullptr;
-   QLabel *_isNotAutomatable = nullptr;
+   QLabel *_isAutomatable = nullptr;
    QLabel *_minValueLabel = nullptr;
    QLabel *_maxValueLabel = nullptr;
    QLabel *_defaultValueLabel = nullptr;

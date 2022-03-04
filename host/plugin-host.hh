@@ -138,6 +138,7 @@ private:
    static void clapStateMarkDirty(const clap_host *host);
 
    bool canUsePluginGui() const noexcept;
+   static uint32_t getCurrentClapGuiApi();
 
    void paramFlushOnMainThread();
    void handlePluginOutputEvents();

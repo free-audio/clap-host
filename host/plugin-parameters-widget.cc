@@ -114,7 +114,7 @@ PluginParametersWidget::PluginParametersWidget(QWidget *parent, PluginHost &plug
    _isHiddenLabel = new QLabel;
    _isBypassLabel = new QLabel;
    _isSteppedLabel = new QLabel;
-   _isNotAutomatable = new QLabel;
+   _isAutomatable = new QLabel;
    _minValueLabel = new QLabel;
    _maxValueLabel = new QLabel;
    _defaultValueLabel = new QLabel;
@@ -151,7 +151,7 @@ PluginParametersWidget::PluginParametersWidget(QWidget *parent, PluginHost &plug
    formLayout->addRow(tr("max_value"), _maxValueLabel);
    formLayout->addRow(tr("default_value"), _defaultValueLabel);
    formLayout->addRow(tr("is_being_adjusted"), _isBeingAdjusted);
-   formLayout->addRow(tr("is_not_automatable"), _isNotAutomatable);
+   formLayout->addRow(tr("is_automatable"), _isAutomatable);
    formLayout->addRow(tr("value"), _valueLabel);
    formLayout->addRow(tr("value"), _valueSlider);
    formLayout->addRow(tr("modulation"), _modulationSlider);
@@ -268,7 +268,7 @@ void PluginParametersWidget::updateParamInfo() {
       _isHiddenLabel->setText("-");
       _isBypassLabel->setText("-");
       _isSteppedLabel->setText("-");
-      _isNotAutomatable->setText("-");
+      _isAutomatable->setText("-");
       _minValueLabel->setText("-");
       _maxValueLabel->setText("-");
       _defaultValueLabel->setText("-");
@@ -286,7 +286,7 @@ void PluginParametersWidget::updateParamInfo() {
       _isReadOnlyLabel->setText(i.flags & CLAP_PARAM_IS_READONLY ? "true" : "false");
       _isHiddenLabel->setText(i.flags & CLAP_PARAM_IS_HIDDEN ? "true" : "false");
       _isBypassLabel->setText(i.flags & CLAP_PARAM_IS_BYPASS ? "true" : "false");
-      _isNotAutomatable->setText(i.flags & CLAP_PARAM_NOT_AUTOMATABLE ? "true" : "false");
+      _isAutomatable->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE ? "true" : "false");
       _isBeingAdjusted->setText(p.isBeingAdjusted() ? "true" : "false");
 
       _isSteppedLabel->setText("float");
