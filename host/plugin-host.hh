@@ -193,10 +193,6 @@ private:
    const clap_plugin_quick_controls *_pluginQuickControls = nullptr;
    const clap_plugin_audio_ports *_pluginAudioPorts = nullptr;
    const clap_plugin_gui *_pluginGui = nullptr;
-   const clap_plugin_gui_x11 *_pluginGuiX11 = nullptr;
-   const clap_plugin_gui_win32 *_pluginGuiWin32 = nullptr;
-   const clap_plugin_gui_cocoa *_pluginGuiCocoa = nullptr;
-   const clap_plugin_gui_free_standing *_pluginGuiFreeStanding = nullptr;
    const clap_plugin_timer_support *_pluginTimerSupport = nullptr;
    const clap_plugin_posix_fd_support *_pluginPosixFdSupport = nullptr;
    const clap_plugin_thread_pool *_pluginThreadPool = nullptr;

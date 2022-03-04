@@ -1,7 +1,6 @@
 #include <QMessageBox>
 
-class AboutDialog : public QMessageBox
-{
+class AboutDialog : public QMessageBox {
    Q_OBJECT
    using super = QMessageBox;
 

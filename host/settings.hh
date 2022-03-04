@@ -15,9 +15,9 @@ public:
    void save(QSettings &settings) const;
 
    AudioSettings &audioSettings() { return _audioSettings; }
-   MidiSettings & midiSettings() { return _midiSettings; }
+   MidiSettings &midiSettings() { return _midiSettings; }
 
 private:
    AudioSettings _audioSettings;
-   MidiSettings  _midiSettings;
+   MidiSettings _midiSettings;
 };

@@ -52,8 +52,7 @@ void Engine::allocateBuffers(size_t bufferSize) {
    _outputs[1] = (float *)std::calloc(1, bufferSize);
 }
 
-void Engine::freeBuffers()
-{
+void Engine::freeBuffers() {
    free(_inputs[0]);
    free(_inputs[1]);
    free(_outputs[0]);

@@ -30,7 +30,4 @@ SettingsDialog::SettingsDialog(Settings &settings, QWidget *parent)
    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 }
 
-SettingsDialog::~SettingsDialog()
-{
-   Application::instance().engine()->start();
-}
+SettingsDialog::~SettingsDialog() { Application::instance().engine()->start(); }

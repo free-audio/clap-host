@@ -37,10 +37,10 @@ public slots:
 private:
    static Application *_instance;
 
-   Settings *  _settings = nullptr;
+   Settings *_settings = nullptr;
    MainWindow *_mainWindow = nullptr;
-   Engine *    _engine = nullptr;
+   Engine *_engine = nullptr;
 
    QString _pluginPath;
-   int     _pluginIndex = 0;
+   int _pluginIndex = 0;
 };

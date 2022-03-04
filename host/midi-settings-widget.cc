@@ -6,10 +6,10 @@
 
 #include <RtMidi.h>
 
-#include "midi-settings-widget.hh"
-#include "midi-settings.hh"
 #include "application.hh"
 #include "engine.hh"
+#include "midi-settings-widget.hh"
+#include "midi-settings.hh"
 
 MidiSettingsWidget::MidiSettingsWidget(MidiSettings &midiSettings) : _midiSettings(midiSettings) {
    auto layout = new QVBoxLayout(this);
@@ -22,7 +22,7 @@ MidiSettingsWidget::MidiSettingsWidget(MidiSettings &midiSettings) : _midiSettin
    auto midiIn = engine ? engine->midiIn() : nullptr;
 
    auto deviceCount = midiIn ? midiIn->getPortCount() : 0;
-   int  inputIndex = 0;
+   int inputIndex = 0;
 
    if (deviceCount <= 0) {
       std::cerr << "warning: no midi device found!" << std::endl;
@@ -76,7 +76,7 @@ void MidiSettingsWidget::selectedDeviceChanged(int index) {
    auto engine = app.engine();
    auto midiIn = engine ? engine->midiIn() : nullptr;
 
-   int  inputIndex = 0;
+   int inputIndex = 0;
    auto deviceCount = midiIn ? midiIn->getPortCount() : 0;
    for (int i = 0; i < deviceCount; ++i) {
       auto name = QString::fromStdString(midiIn->getPortName(i));
