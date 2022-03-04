@@ -615,6 +615,10 @@ bool PluginHost::clapGuiRequestHide(const clap_host *host) {
    return false;
 }
 
+void PluginHost::clapGuiClosed(const clap_host *host, bool wasDestroyed) {
+   checkForMainThread();
+}
+
 void PluginHost::processBegin(int nframes) {
    g_thread_type = ThreadType::AudioThread;
 

@@ -134,6 +134,7 @@ private:
    static bool clapGuiRequestResize(const clap_host *host, uint32_t width, uint32_t height);
    static bool clapGuiRequestShow(const clap_host *host);
    static bool clapGuiRequestHide(const clap_host *host);
+   static void clapGuiClosed(const clap_host *host, bool wasDestroyed);
 
    static void clapStateMarkDirty(const clap_host *host);
 
@@ -156,7 +157,9 @@ private:
       PluginHost::clapGuiRequestResize,
       PluginHost::clapGuiRequestShow,
       PluginHost::clapGuiRequestHide,
+      PluginHost::clapGuiClosed,
    };
+
    // static const constexpr clap_host_audio_ports hostAudioPorts_;
    // static const constexpr clap_host_audio_ports_config hostAudioPortsConfig_;
    static const constexpr clap_host_params _hostParams = {
