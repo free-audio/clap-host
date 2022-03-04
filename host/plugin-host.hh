@@ -138,7 +138,7 @@ private:
    static void clapStateMarkDirty(const clap_host *host);
 
    bool canUsePluginGui() const noexcept;
-   static uint32_t getCurrentClapGuiApi();
+   static const char *getCurrentClapGuiApi();
 
    void paramFlushOnMainThread();
    void handlePluginOutputEvents();
@@ -287,8 +287,10 @@ private:
 
    bool _scheduleParamFlush = false;
 
+   const char *_guiApi = nullptr;
    bool _isGuiCreated = false;
    bool _isGuiVisible = false;
+   bool _isGuiFloating = false;
 
    bool _scheduleMainThreadCallback = false;
 };

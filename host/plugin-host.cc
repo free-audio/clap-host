@@ -248,16 +248,33 @@ void PluginHost::setPorts(int numInputs, float **inputs, int numOutputs, float *
    _audioOut.latency = 0;
 }
 
-uint32_t PluginHost::getCurrentClapGuiApi() {
+const char *PluginHost::getCurrentClapGuiApi() {
 #if defined(Q_OS_LINUX)
-   return CLAP_GUI_API_X11;
-#elif defined(Q_OS_WIN32)
+   return CLAP_WINDOW_API_X11;
+#elif defined(Q_WINDOW_WIN32)
    return CLAP_GUI_API_WIN32;
-#elif defined(Q_OS_COCOA)
-   return CLAP_GUI_API_COCOA;
+#elif defined(Q_WINDOW_COCOA)
+   return CLAP_WINDOW_API_COCOA;
 #else
 #   error "unsupported platform"
 #endif
+}
+
+static clap_window makeClapWindow(WId window) {
+   clap_window w;
+#if defined(Q_OS_LINUX)
+   w.api = CLAP_WINDOW_API_X11;
+   w.x11.display = nullptr;
+   w.x11.window = window;
+#elif defined(Q_OS_MACX)
+   w.api = CLAP_WINDOW_API_COCOA;
+   w.cocoa.nsView = reinterpret_cast<void *>(window));
+#elif defined(Q_OS_WIN32)
+   w.api = CLAP_WINDOW_API_COCOA;
+   w.win32.window = reinterpret_cast<clap_hwnd>(window);
+#endif
+
+   return w;
 }
 
 void PluginHost::setParentWindow(WId parentWindow) {
@@ -272,7 +289,19 @@ void PluginHost::setParentWindow(WId parentWindow) {
       _isGuiVisible = false;
    }
 
-   if (!_pluginGui->create(_plugin)) {
+   _guiApi = getCurrentClapGuiApi();
+
+   _isGuiFloating = false;
+   if (!_pluginGui->is_api_supported(_plugin, _guiApi, false)) {
+      if (!_pluginGui->is_api_supported(_plugin, _guiApi, true)) {
+         qWarning() << "could find a suitable gui api";
+         return;
+      }
+      _isGuiFloating = true;
+   }
+
+   auto w = makeClapWindow(parentWindow);
+   if (!_pluginGui->create(_plugin, &w, _isGuiFloating)) {
       qWarning() << "could not create the plugin gui";
       return;
    }
@@ -280,42 +309,21 @@ void PluginHost::setParentWindow(WId parentWindow) {
    _isGuiCreated = true;
    assert(_isGuiVisible == false);
 
-   uint32_t width = 0;
-   uint32_t height = 0;
+   if (_isGuiFloating) {
+      _pluginGui->suggest_title(_plugin, "using clap-host suggested title");
+   } else {
+      uint32_t width = 0;
+      uint32_t height = 0;
 
-   if (!_pluginGui->get_size(_plugin, &width, &height)) {
-      qWarning() << "could not get the size of the plugin gui";
-      _isGuiCreated = false;
-      _pluginGui->destroy(_plugin);
-      return;
+      if (!_pluginGui->get_size(_plugin, &width, &height)) {
+         qWarning() << "could not get the size of the plugin gui";
+         _isGuiCreated = false;
+         _pluginGui->destroy(_plugin);
+         return;
+      }
+
+      Application::instance().mainWindow()->resizePluginView(width, height);
    }
-
-   Application::instance().mainWindow()->resizePluginView(width, height);
-
-   bool didAttach = false;
-
-#if defined(Q_OS_LINUX)
-   if (_pluginGuiX11)
-      didAttach = _pluginGuiX11->attach(_plugin, nullptr, parentWindow);
-#elif defined(Q_OS_MACX)
-   if (_pluginGuiCocoa)
-      didAttach = _pluginGuiCocoa->attach(_plugin, reinterpret_cast<void *>(parentWindow));
-#elif defined(Q_OS_WIN32)
-   if (_pluginGuiWin32)
-      didAttach = _pluginGuiWin32->attach(_plugin, (clap_hwnd)parentWindow);
-#endif
-
-   if (!didAttach && _pluginGuiFreeStanding)
-      didAttach = _pluginGuiFreeStanding->open(_plugin);
-
-   if (!didAttach) {
-      qWarning() << "the plugin failed to attach its gui";
-      _isGuiCreated = false;
-      _pluginGui->destroy(_plugin);
-      return;
-   }
-
-   // Application::instance().processEvents();
 
    setPluginWindowVisibility(true);
 }
@@ -1265,6 +1273,6 @@ QString PluginHost::paramValueToText(clap_id paramId, double value) {
 bool PluginHost::canUsePluginGui() const noexcept {
    return _pluginGui && _pluginGui->create && _pluginGui->destroy && _pluginGui->can_resize &&
           _pluginGui->get_size && _pluginGui->adjust_size && _pluginGui->set_size &&
-          _pluginGui->set_scale && _pluginGui->hide && _pluginGui->show && _pluginGui->attach &&
-          _pluginGui->set_transient && _pluginGui->suggest_title && _pluginGui->is_api_supported;
+          _pluginGui->set_scale && _pluginGui->hide && _pluginGui->show &&
+          _pluginGui->suggest_title && _pluginGui->is_api_supported;
 }
