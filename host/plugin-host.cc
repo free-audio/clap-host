@@ -791,7 +791,7 @@ void PluginHost::handlePluginOutputEvents() {
       switch (h->type) {
       case CLAP_EVENT_PARAM_VALUE: {
          auto ev = reinterpret_cast<const clap_event_param_value *>(h);
-         bool &isAdj = _isAdjusting[ev->param_id];
+         bool &isAdj = _isAdjustingParameter[ev->param_id];
 
          if (ev->header.flags & CLAP_EVENT_BEGIN_ADJUST) {
             if (isAdj)

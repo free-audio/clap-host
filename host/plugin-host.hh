@@ -244,7 +244,7 @@ private:
    clap::helpers::ReducingParamQueue<clap_id, AppToEngineParamQueueValue> _appToEngineModQueue;
    clap::helpers::ReducingParamQueue<clap_id, EngineToAppParamQueueValue> _engineToAppValueQueue;
 
-   std::unordered_map<clap_id, bool> _isAdjusting;
+   std::unordered_map<clap_id, bool> _isAdjustingParameter;
 
    std::vector<std::unique_ptr<clap_quick_controls_page>> _quickControlsPages;
    std::unordered_map<clap_id, clap_quick_controls_page *> _quickControlsPagesIndex;
