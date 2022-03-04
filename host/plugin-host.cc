@@ -264,14 +264,13 @@ static clap_window makeClapWindow(WId window) {
    clap_window w;
 #if defined(Q_OS_LINUX)
    w.api = CLAP_WINDOW_API_X11;
-   w.x11.display = nullptr;
-   w.x11.window = window;
+   w.x11_window = window;
 #elif defined(Q_OS_MACX)
    w.api = CLAP_WINDOW_API_COCOA;
-   w.cocoa.nsView = reinterpret_cast<void *>(window));
+   w.cocoa_nsview = reinterpret_cast<void *>(window));
 #elif defined(Q_OS_WIN32)
    w.api = CLAP_WINDOW_API_COCOA;
-   w.win32.window = reinterpret_cast<clap_hwnd>(window);
+   w.win32_window = reinterpret_cast<void *>(window);
 #endif
 
    return w;
