@@ -251,9 +251,9 @@ void PluginHost::setPorts(int numInputs, float **inputs, int numOutputs, float *
 const char *PluginHost::getCurrentClapGuiApi() {
 #if defined(Q_OS_LINUX)
    return CLAP_WINDOW_API_X11;
-#elif defined(Q_WINDOW_WIN32)
+#elif defined(Q_OS_WIN)
    return CLAP_GUI_API_WIN32;
-#elif defined(Q_WINDOW_COCOA)
+#elif defined(Q_OS_MACOS)
    return CLAP_WINDOW_API_COCOA;
 #else
 #   error "unsupported platform"
@@ -267,8 +267,8 @@ static clap_window makeClapWindow(WId window) {
    w.x11 = window;
 #elif defined(Q_OS_MACX)
    w.api = CLAP_WINDOW_API_COCOA;
-   w.cocoa = reinterpret_cast<clap_nsview>(window));
-#elif defined(Q_OS_WIN32)
+   w.cocoa = reinterpret_cast<clap_nsview>(window);
+#elif defined(Q_OS_WIN)
    w.api = CLAP_WINDOW_API_COCOA;
    w.win32 = reinterpret_cast<clap_hwnd>(window);
 #endif
@@ -300,7 +300,7 @@ void PluginHost::setParentWindow(WId parentWindow) {
    }
 
    auto w = makeClapWindow(parentWindow);
-   if (!_pluginGui->create(_plugin, &w, _isGuiFloating)) {
+   if (!_pluginGui->create(_plugin, w.api, _isGuiFloating)) {
       qWarning() << "could not create the plugin gui";
       return;
    }
@@ -309,6 +309,7 @@ void PluginHost::setParentWindow(WId parentWindow) {
    assert(_isGuiVisible == false);
 
    if (_isGuiFloating) {
+      _pluginGui->set_transient(_plugin, &w);
       _pluginGui->suggest_title(_plugin, "using clap-host suggested title");
    } else {
       uint32_t width = 0;
@@ -322,6 +323,13 @@ void PluginHost::setParentWindow(WId parentWindow) {
       }
 
       Application::instance().mainWindow()->resizePluginView(width, height);
+
+      if (!_pluginGui->set_parent(_plugin, &w)) {
+         qWarning() << "could embbed the plugin gui";
+         _isGuiCreated = false;
+         _pluginGui->destroy(_plugin);
+         return;
+      }
    }
 
    setPluginWindowVisibility(true);
