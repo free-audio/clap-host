@@ -252,7 +252,7 @@ const char *PluginHost::getCurrentClapGuiApi() {
 #if defined(Q_OS_LINUX)
    return CLAP_WINDOW_API_X11;
 #elif defined(Q_OS_WIN)
-   return CLAP_GUI_API_WIN32;
+   return CLAP_WINDOW_API_WIN32;
 #elif defined(Q_OS_MACOS)
    return CLAP_WINDOW_API_COCOA;
 #else
