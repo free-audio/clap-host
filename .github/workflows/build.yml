@@ -29,7 +29,7 @@ jobs:
             build_dir: ninja-vcpkg
           - os: 'windows-2022'
             mono: ''
-            triplet: 'x64-windows'
+            triplet: 'x64-win'
             artifact: 'x86_64-windows'
             exe_ext: '.exe'
             build_dir: vs-vcpkg
