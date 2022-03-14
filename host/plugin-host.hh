@@ -239,8 +239,9 @@ private:
    };
 
    struct EngineToAppParamQueueValue {
+      enum Type { Value, Begin, End };
+      Type type;
       double value;
-      bool isAdjusting;
    };
 
    clap::helpers::ReducingParamQueue<clap_id, AppToEngineParamQueueValue> _appToEngineValueQueue;

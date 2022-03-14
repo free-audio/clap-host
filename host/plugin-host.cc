@@ -623,9 +623,7 @@ bool PluginHost::clapGuiRequestHide(const clap_host *host) {
    return false;
 }
 
-void PluginHost::clapGuiClosed(const clap_host *host, bool wasDestroyed) {
-   checkForMainThread();
-}
+void PluginHost::clapGuiClosed(const clap_host *host, bool wasDestroyed) { checkForMainThread(); }
 
 void PluginHost::processBegin(int nframes) {
    g_thread_type = ThreadType::AudioThread;
@@ -801,24 +799,31 @@ void PluginHost::handlePluginOutputEvents() {
    for (uint32_t i = 0; i < _evOut.size(); ++i) {
       auto h = _evOut.get(i);
       switch (h->type) {
-      case CLAP_EVENT_PARAM_VALUE: {
-         auto ev = reinterpret_cast<const clap_event_param_value *>(h);
+      case CLAP_EVENT_PARAM_GESTURE_BEGIN: {
+         auto ev = reinterpret_cast<const clap_event_param_gesture *>(h);
          bool &isAdj = _isAdjustingParameter[ev->param_id];
 
-         if (ev->header.flags & CLAP_EVENT_BEGIN_ADJUST) {
-            if (isAdj)
-               throw std::logic_error("The plugin sent BEGIN_ADJUST twice");
-            isAdj = true;
-         }
+         if (isAdj)
+            throw std::logic_error("The plugin sent BEGIN_ADJUST twice");
+         isAdj = true;
+         _engineToAppValueQueue.set(ev->param_id, {EngineToAppParamQueueValue::Begin, 0});
+         break;
+      }
 
-         if (ev->header.flags & CLAP_EVENT_END_ADJUST) {
-            if (!isAdj)
-               throw std::logic_error(
-                  "The plugin sent END_ADJUST without a preceding BEGIN_ADJUST");
-            isAdj = false;
-         }
+      case CLAP_EVENT_PARAM_GESTURE_END: {
+         auto ev = reinterpret_cast<const clap_event_param_gesture *>(h);
+         bool &isAdj = _isAdjustingParameter[ev->param_id];
 
-         _engineToAppValueQueue.set(ev->param_id, {ev->value, isAdj});
+         if (!isAdj)
+            throw std::logic_error("The plugin sent END_ADJUST without a preceding BEGIN_ADJUST");
+         isAdj = false;
+         _engineToAppValueQueue.set(ev->param_id, {EngineToAppParamQueueValue::End, 0});
+         break;
+      }
+
+      case CLAP_EVENT_PARAM_VALUE: {
+         auto ev = reinterpret_cast<const clap_event_param_value *>(h);
+         _engineToAppValueQueue.set(ev->param_id, {EngineToAppParamQueueValue::Value, ev->value});
          break;
       }
       }
@@ -857,8 +862,19 @@ void PluginHost::idle() {
             throw std::invalid_argument(msg.str());
          }
 
-         it->second->setValue(value.value);
-         it->second->setIsAdjusting(value.isAdjusting);
+         switch (value.type) {
+            case EngineToAppParamQueueValue::Value:
+               it->second->setValue(value.value);
+               break;
+
+            case EngineToAppParamQueueValue::Begin:
+               it->second->setIsAdjusting(true);
+               break;
+
+            case EngineToAppParamQueueValue::End:
+               it->second->setIsAdjusting(false);
+               break;
+         }
 
          emit paramAdjusted(param_id);
       });
