@@ -806,7 +806,11 @@ void PluginHost::handlePluginOutputEvents() {
          if (isAdj)
             throw std::logic_error("The plugin sent BEGIN_ADJUST twice");
          isAdj = true;
-         _engineToAppValueQueue.set(ev->param_id, {EngineToAppParamQueueValue::Begin, 0});
+
+         EngineToAppParamQueueValue v;
+         v.has_gesture = true;
+         v.is_begin = true;
+         _engineToAppValueQueue.setOrUpdate(ev->param_id, v);
          break;
       }
 
@@ -817,13 +821,19 @@ void PluginHost::handlePluginOutputEvents() {
          if (!isAdj)
             throw std::logic_error("The plugin sent END_ADJUST without a preceding BEGIN_ADJUST");
          isAdj = false;
-         _engineToAppValueQueue.set(ev->param_id, {EngineToAppParamQueueValue::End, 0});
+         EngineToAppParamQueueValue v;
+         v.has_gesture = true;
+         v.is_begin = false;
+         _engineToAppValueQueue.setOrUpdate(ev->param_id, v);
          break;
       }
 
       case CLAP_EVENT_PARAM_VALUE: {
          auto ev = reinterpret_cast<const clap_event_param_value *>(h);
-         _engineToAppValueQueue.set(ev->param_id, {EngineToAppParamQueueValue::Value, ev->value});
+         EngineToAppParamQueueValue v;
+         v.has_value = true;
+         v.value = ev->value;
+         _engineToAppValueQueue.setOrUpdate(ev->param_id, v);
          break;
       }
       }
@@ -862,19 +872,11 @@ void PluginHost::idle() {
             throw std::invalid_argument(msg.str());
          }
 
-         switch (value.type) {
-            case EngineToAppParamQueueValue::Value:
-               it->second->setValue(value.value);
-               break;
+         if (value.has_value)
+            it->second->setValue(value.value);
 
-            case EngineToAppParamQueueValue::Begin:
-               it->second->setIsAdjusting(true);
-               break;
-
-            case EngineToAppParamQueueValue::End:
-               it->second->setIsAdjusting(false);
-               break;
-         }
+         if (value.has_gesture)
+            it->second->setIsAdjusting(value.is_begin);
 
          emit paramAdjusted(param_id);
       });

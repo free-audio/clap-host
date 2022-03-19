@@ -239,9 +239,22 @@ private:
    };
 
    struct EngineToAppParamQueueValue {
-      enum Type { Value, Begin, End };
-      Type type;
-      double value;
+      void update(const EngineToAppParamQueueValue& v) noexcept {
+         if (v.has_value) {
+            has_value = true;
+            value = v.value;
+         }
+
+         if (v.has_gesture) {
+            has_gesture = true;
+            is_begin = v.is_begin;
+         }
+      }
+
+      bool has_value = false;
+      bool has_gesture = false;
+      bool is_begin = false;
+      double value = 0;
    };
 
    clap::helpers::ReducingParamQueue<clap_id, AppToEngineParamQueueValue> _appToEngineValueQueue;
