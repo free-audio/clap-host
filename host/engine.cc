@@ -71,10 +71,11 @@ void Engine::start() {
 
    /* midi */
    try {
+      auto &deviceRef = _settings.midiSettings().deviceReference();
       _midiIn.reset();
-      _midiIn = std::make_unique<RtMidiIn>();
+      _midiIn = std::make_unique<RtMidiIn>(RtMidi::getCompiledApiByName(deviceRef._api.toStdString()));
       if (_midiIn) {
-         _midiIn->openPort(_settings.midiSettings().deviceReference()._index);
+         _midiIn->openPort(deviceRef._index, "clap-host");
          _midiIn->ignoreTypes(false, false, false);
       }
    } catch (...) {
@@ -169,7 +170,6 @@ int Engine::audioCallback(void *outputBuffer,
 
    thiz->_pluginHost->processBegin(frameCount);
 
-   MidiSettings &ms = thiz->_settings.midiSettings();
    auto &midiBuf = thiz->_midiInBuffer;
    while (thiz->_midiIn && thiz->_midiIn->isPortOpen()) {
       auto msgTime = thiz->_midiIn->getMessage(&midiBuf);

@@ -10,8 +10,10 @@ QT_BEGIN_NAMESPACE
 class QComboBox;
 QT_END_NAMESPACE
 
-class AudioSettingsWidget : public QWidget {
+class AudioSettingsWidget final : public QWidget {
    Q_OBJECT
+   using super = QWidget;
+
 public:
    explicit AudioSettingsWidget(AudioSettings &audioSettings, QWidget *parent = nullptr);
    ~AudioSettingsWidget() override;
@@ -32,9 +34,8 @@ private:
 
    void saveSettings();
 
-private:
    AudioSettings &_audioSettings;
-   QComboBox *_apiWidget = nullptr;
+   QComboBox *_apiChooser = nullptr;
    QComboBox *_deviceChooser = nullptr;
    QComboBox *_sampleRateChooser = nullptr;
    QComboBox *_bufferSizeChooser = nullptr;

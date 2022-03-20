@@ -208,6 +208,9 @@ bool PluginHost::canActivate() const {
 void PluginHost::activate(int32_t sample_rate, int32_t blockSize) {
    checkForMainThread();
 
+   if (!_plugin)
+      return;
+
    assert(!isPluginActive());
    if (!_plugin->activate(_plugin, sample_rate, blockSize, blockSize)) {
       setPluginState(InactiveWithError);

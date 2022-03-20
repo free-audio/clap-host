@@ -2,6 +2,7 @@
 
 #include <QComboBox>
 #include <QGroupBox>
+#include <QLabel>
 #include <QVBoxLayout>
 
 #include <RtMidi.h>
@@ -11,85 +12,119 @@
 #include "midi-settings-widget.hh"
 #include "midi-settings.hh"
 
-MidiSettingsWidget::MidiSettingsWidget(MidiSettings &midiSettings) : _midiSettings(midiSettings) {
-   auto layout = new QVBoxLayout(this);
+MidiSettingsWidget::MidiSettingsWidget(MidiSettings &midiSettings, QWidget *parent)
+   : super(parent), _midiSettings(midiSettings) {
+   _apiChooser = new QComboBox(this);
+   _deviceChooser = new QComboBox(this);
 
-   auto deviceComboBox = new QComboBox;
-   bool deviceFound = false;
+   auto layout = new QGridLayout(this);
+   layout->addWidget(new QLabel(tr("API")), 0, 0);
+   layout->addWidget(new QLabel(tr("Device")), 1, 0);
 
-   auto &app = Application::instance();
-   auto engine = app.engine();
-   auto midiIn = engine ? engine->midiIn() : nullptr;
+   layout->addWidget(_apiChooser, 0, 1);
+   layout->addWidget(_deviceChooser, 1, 1);
 
-   auto deviceCount = midiIn ? midiIn->getPortCount() : 0;
-   int inputIndex = 0;
-
-   if (deviceCount <= 0) {
-      std::cerr << "warning: no midi device found!" << std::endl;
-   }
-
-   for (int i = 0; i < deviceCount; ++i) {
-      auto name = QString::fromStdString(midiIn->getPortName(i));
-
-      deviceComboBox->addItem(name);
-
-      if (!deviceFound && _midiSettings.deviceReference()._index == i &&
-          _midiSettings.deviceReference()._name == name) {
-         deviceComboBox->setCurrentIndex(inputIndex);
-         deviceFound = true;
-         selectedDeviceChanged(inputIndex);
-      }
-
-      ++inputIndex;
-   }
-
-   // try to find the device just by its name.
-   inputIndex = 0;
-   for (int i = 0; !deviceFound && i < deviceCount; ++i) {
-      auto name = QString::fromStdString(midiIn->getPortName(i));
-
-      if (_midiSettings.deviceReference()._name == name) {
-         deviceComboBox->setCurrentIndex(inputIndex);
-         deviceFound = true;
-         selectedDeviceChanged(inputIndex);
-      }
-
-      ++inputIndex;
-   }
-
-   connect(
-      deviceComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectedDeviceChanged(int)));
-
-   layout->addWidget(deviceComboBox);
-
-   QGroupBox *groupBox = new QGroupBox;
+   QGroupBox *groupBox = new QGroupBox(this);
    groupBox->setLayout(layout);
-   groupBox->setTitle(tr("MIDI"));
+   groupBox->setTitle(tr("Audio"));
 
-   QVBoxLayout *groupLayout = new QVBoxLayout;
+   QLayout *groupLayout = new QVBoxLayout();
    groupLayout->addWidget(groupBox);
    setLayout(groupLayout);
+
+   initApiList();
+   refresh();
+
+   connect(
+      _apiChooser, &QComboBox::currentIndexChanged, this, &MidiSettingsWidget::selectedApiChanged);
+   connect(_deviceChooser,
+           &QComboBox::currentIndexChanged,
+           this,
+           &MidiSettingsWidget::selectedDeviceChanged);
+}
+
+MidiSettingsWidget::~MidiSettingsWidget() = default;
+
+void MidiSettingsWidget::initApiList() {
+   _apiChooser->clear();
+
+   auto selectedApi = _midiSettings.deviceReference()._api.toStdString();
+
+   std::vector<RtMidi::Api> APIs;
+   RtMidi::getCompiledApi(APIs);
+   for (const auto &api : APIs) {
+      _apiChooser->addItem(QString::fromStdString(RtMidi::getApiDisplayName(api)));
+      if (selectedApi == RtMidi::getApiName(api))
+         _apiChooser->setCurrentIndex(_apiChooser->count() - 1);
+   }
+}
+
+void MidiSettingsWidget::refresh() {
+   _midiIn.reset(); // make sure we delete the old one first
+   _midiIn = std::make_unique<RtMidiIn>(getSelectedMidiApi(), "clap-host-settings");
+
+   _isRefreshingDeviceList = true;
+   updateDeviceList();
+   _isRefreshingDeviceList = false;
+}
+
+void MidiSettingsWidget::updateDeviceList() {
+   _deviceChooser->clear();
+
+   auto deviceCount = _midiIn->getPortCount();
+   bool deviceFound = false;
+
+   // Populate the choices
+   for (int i = 0; i < deviceCount; ++i) {
+      QString name = QString::fromStdString(_midiIn->getPortName(i));
+      _deviceChooser->addItem(name);
+
+      if (!deviceFound && _midiSettings.deviceReference()._name == name) {
+         _deviceChooser->setCurrentIndex(i);
+         deviceFound = true;
+      }
+   }
+
+   if (!deviceFound)
+      _deviceChooser->setCurrentIndex(0);
+}
+
+RtMidi::Api MidiSettingsWidget::getSelectedMidiApi() const {
+   std::vector<RtMidi::Api> APIs;
+   RtMidi::getCompiledApi(APIs);
+
+   const auto index = _apiChooser->currentIndex();
+   if (index >= APIs.size())
+      return RtMidi::RTMIDI_DUMMY;
+   return APIs[index];
+}
+
+void MidiSettingsWidget::selectedApiChanged(int index) {
+   if (_isRefreshingDeviceList)
+      return;
+
+   refresh();
+   saveSettings();
 }
 
 void MidiSettingsWidget::selectedDeviceChanged(int index) {
-   auto &app = Application::instance();
-   auto engine = app.engine();
-   auto midiIn = engine ? engine->midiIn() : nullptr;
+   if (_isRefreshingDeviceList)
+      return;
 
-   int inputIndex = 0;
-   auto deviceCount = midiIn ? midiIn->getPortCount() : 0;
-   for (int i = 0; i < deviceCount; ++i) {
-      auto name = QString::fromStdString(midiIn->getPortName(i));
+   saveSettings();
+}
 
-      if (inputIndex != index) {
-         ++inputIndex;
-         continue;
-      }
+void MidiSettingsWidget::saveSettings() {
+   if (_isRefreshingDeviceList)
+      return;
 
-      DeviceReference ref;
-      ref._index = i;
-      ref._name = name;
-      _midiSettings.setDeviceReference(ref);
-      break;
-   }
+   int index = _deviceChooser->currentIndex();
+   auto portName = _midiIn->getPortName(index);
+
+   DeviceReference ref;
+   auto apiName = RtMidi::getApiName(getSelectedMidiApi());
+   ref._api = QString::fromStdString(apiName);
+   ref._index = index;
+   ref._name = QString::fromStdString(portName);
+   _midiSettings.setDeviceReference(ref);
 }
