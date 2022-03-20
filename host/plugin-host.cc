@@ -795,6 +795,9 @@ void PluginHost::process() {
    _evIn.clear();
 
    _engineToAppValueQueue.producerDone();
+
+   // TODO: send plugin to sleep if possible
+
    g_thread_type = ThreadType::Unknown;
 }
 
