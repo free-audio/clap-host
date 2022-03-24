@@ -21,7 +21,7 @@ Static builds will require more time and space.
 
 ## Building on various platforms
 
-### macOS, dynamic build with brew
+### macOS, dynamic build with brew (recommended)
 
 ```shell
 # Install dependencies
