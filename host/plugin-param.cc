@@ -39,8 +39,12 @@ bool PluginParam::isInfoEqualTo(const clap_param_info &info) const {
 
 bool PluginParam::isInfoCriticallyDifferentTo(const clap_param_info &info) const {
    assert(_info.id == info.id);
-   return (_info.flags & CLAP_PARAM_IS_PER_NOTE) == (info.flags & CLAP_PARAM_IS_PER_NOTE) ||
-          (_info.flags & CLAP_PARAM_IS_PER_CHANNEL) == (info.flags & CLAP_PARAM_IS_PER_CHANNEL) ||
-          (_info.flags & CLAP_PARAM_IS_READONLY) == (info.flags & CLAP_PARAM_IS_READONLY) ||
+   const uint32_t criticalFlags =
+      CLAP_PARAM_IS_AUTOMATABLE | CLAP_PARAM_IS_AUTOMATABLE_PER_NOTE |
+      CLAP_PARAM_IS_AUTOMATABLE_PER_CHANNEL | CLAP_PARAM_IS_AUTOMATABLE_PER_PORT |
+      CLAP_PARAM_IS_MODULATABLE | CLAP_PARAM_IS_MODULATABLE_PER_NOTE |
+      CLAP_PARAM_IS_MODULATABLE_PER_CHANNEL | CLAP_PARAM_IS_MODULATABLE_PER_PORT |
+      CLAP_PARAM_IS_READONLY | CLAP_PARAM_REQUIRES_PROCESS;
+   return (_info.flags & criticalFlags) == (info.flags & criticalFlags) ||
           _info.min_value != _info.min_value || _info.max_value != _info.max_value;
 }

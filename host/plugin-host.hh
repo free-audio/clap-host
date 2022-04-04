@@ -131,6 +131,7 @@ private:
    static const void *clapExtension(const clap_host *host, const char *extension);
 
    /* clap host gui callbacks */
+   static void clapGuiResizeHintsChanged(const clap_host_t *host);
    static bool clapGuiRequestResize(const clap_host *host, uint32_t width, uint32_t height);
    static bool clapGuiRequestShow(const clap_host *host);
    static bool clapGuiRequestHide(const clap_host *host);
@@ -154,6 +155,7 @@ private:
       PluginHost::clapLog,
    };
    static const constexpr clap_host_gui _hostGui = {
+      PluginHost::clapGuiResizeHintsChanged,
       PluginHost::clapGuiRequestResize,
       PluginHost::clapGuiRequestShow,
       PluginHost::clapGuiRequestHide,

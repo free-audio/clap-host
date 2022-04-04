@@ -605,25 +605,35 @@ void PluginHost::eventLoopSetFdNotifierFlags(int fd, int flags) {
       it->second->wr->setEnabled(false);
 }
 
-bool PluginHost::clapGuiRequestResize(const clap_host *host, uint32_t width, uint32_t height) {
-   checkForMainThread();
+void PluginHost::clapGuiResizeHintsChanged(const clap_host_t *host) {
+   // TODO
+}
 
-   Application::instance().mainWindow()->resizePluginView(width, height);
+bool PluginHost::clapGuiRequestResize(const clap_host *host, uint32_t width, uint32_t height) {
+   QMetaObject::invokeMethod(
+      Application::instance().mainWindow(),
+      [width, height] { Application::instance().mainWindow()->resizePluginView(width, height); },
+      Qt::QueuedConnection);
+
    return true;
 }
 
 bool PluginHost::clapGuiRequestShow(const clap_host *host) {
-   checkForMainThread();
+   QMetaObject::invokeMethod(
+      Application::instance().mainWindow(),
+      [] { Application::instance().mainWindow()->showPluginWindow(); },
+      Qt::QueuedConnection);
 
-   Application::instance().mainWindow()->showPluginWindow();
-   return false;
+   return true;
 }
 
 bool PluginHost::clapGuiRequestHide(const clap_host *host) {
-   checkForMainThread();
+   QMetaObject::invokeMethod(
+      Application::instance().mainWindow(),
+      [] { Application::instance().mainWindow()->hidePluginWindow(); },
+      Qt::QueuedConnection);
 
-   Application::instance().mainWindow()->hidePluginWindow();
-   return false;
+   return true;
 }
 
 void PluginHost::clapGuiClosed(const clap_host *host, bool wasDestroyed) { checkForMainThread(); }
