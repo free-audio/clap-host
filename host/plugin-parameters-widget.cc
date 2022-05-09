@@ -109,11 +109,13 @@ PluginParametersWidget::PluginParametersWidget(QWidget *parent, PluginHost &plug
    _moduleLabel = new QLabel;
    _isAutomatableLabel = new QLabel;
    _isAutomatablePerPortLabel = new QLabel;
-   _isAutomatablePerNoteLabel = new QLabel;
+   _isAutomatablePerNoteIdLabel = new QLabel;
+   _isAutomatablePerKeyLabel = new QLabel;
    _isAutomatablePerChannelLabel = new QLabel;
    _isModulatableLabel = new QLabel;
    _isModulatablePerPortLabel = new QLabel;
-   _isModulatablePerNoteLabel = new QLabel;
+   _isModulatablePerKeyLabel = new QLabel;
+   _isModulatablePerNoteIdLabel = new QLabel;
    _isModulatablePerChannelLabel = new QLabel;
    _isPeriodicLabel = new QLabel;
    _isReadOnlyLabel = new QLabel;
@@ -146,11 +148,13 @@ PluginParametersWidget::PluginParametersWidget(QWidget *parent, PluginHost &plug
    formLayout->addRow(tr("name"), _nameLabel);
    formLayout->addRow(tr("module"), _moduleLabel);
    formLayout->addRow(tr("is_automatable"), _isAutomatableLabel);
-   formLayout->addRow(tr("is_automatable_per_note"), _isAutomatablePerNoteLabel);
+   formLayout->addRow(tr("is_automatable_per_note_id"), _isAutomatablePerNoteIdLabel);
+   formLayout->addRow(tr("is_automatable_per_key"), _isAutomatablePerKeyLabel);
    formLayout->addRow(tr("is_automatable_per_channel"), _isAutomatablePerChannelLabel);
    formLayout->addRow(tr("is_automatable_per_port"), _isAutomatablePerPortLabel);
    formLayout->addRow(tr("is_modulatable"), _isModulatableLabel);
-   formLayout->addRow(tr("is_modulatable_per_note"), _isModulatablePerNoteLabel);
+   formLayout->addRow(tr("is_modulatable_per_note_id"), _isModulatablePerKeyLabel);
+   formLayout->addRow(tr("is_modulatable_per_key"), _isModulatablePerNoteIdLabel);
    formLayout->addRow(tr("is_modulatable_per_channel"), _isModulatablePerChannelLabel);
    formLayout->addRow(tr("is_modulatable_per_port"), _isModulatablePerPortLabel);
    formLayout->addRow(tr("is_periodic"), _isPeriodicLabel);
@@ -271,7 +275,7 @@ void PluginParametersWidget::updateParamInfo() {
       _idLabel->setText("-");
       _nameLabel->setText("-");
       _moduleLabel->setText("-");
-      _isAutomatablePerNoteLabel->setText("-");
+      _isAutomatablePerNoteIdLabel->setText("-");
       _isAutomatablePerChannelLabel->setText("-");
       _isPeriodicLabel->setText("-");
       _isReadOnlyLabel->setText("-");
@@ -279,11 +283,13 @@ void PluginParametersWidget::updateParamInfo() {
       _isBypassLabel->setText("-");
       _isSteppedLabel->setText("-");
       _isAutomatableLabel->setText("-");
-      _isAutomatablePerNoteLabel->setText("-");
+      _isAutomatablePerNoteIdLabel->setText("-");
+      _isAutomatablePerKeyLabel->setText("-");
       _isAutomatablePerChannelLabel->setText("-");
       _isAutomatablePerPortLabel->setText("-");
       _isModulatableLabel->setText("-");
-      _isModulatablePerNoteLabel->setText("-");
+      _isModulatablePerNoteIdLabel->setText("-");
+      _isModulatablePerKeyLabel->setText("-");
       _isModulatablePerChannelLabel->setText("-");
       _isModulatablePerPortLabel->setText("-");
       _minValueLabel->setText("-");
@@ -299,11 +305,13 @@ void PluginParametersWidget::updateParamInfo() {
       _moduleLabel->setText(i.module);
 
       _isAutomatableLabel->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE ? "true" : "false");
-      _isAutomatablePerNoteLabel->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE_PER_NOTE_ID ? "true" : "false");
+      _isAutomatablePerNoteIdLabel->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE_PER_NOTE_ID ? "true" : "false");
+      _isAutomatablePerKeyLabel->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE_PER_KEY ? "true" : "false");
       _isAutomatablePerChannelLabel->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE_PER_CHANNEL ? "true" : "false");
       _isAutomatablePerPortLabel->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE_PER_PORT ? "true" : "false");
       _isModulatableLabel->setText(i.flags & CLAP_PARAM_IS_MODULATABLE ? "true" : "false");
-      _isModulatablePerNoteLabel->setText(i.flags & CLAP_PARAM_IS_MODULATABLE_PER_NOTE_ID ? "true" : "false");
+      _isModulatablePerNoteIdLabel->setText(i.flags & CLAP_PARAM_IS_MODULATABLE_PER_NOTE_ID ? "true" : "false");
+      _isModulatablePerKeyLabel->setText(i.flags & CLAP_PARAM_IS_MODULATABLE_PER_KEY ? "true" : "false");
       _isModulatablePerChannelLabel->setText(i.flags & CLAP_PARAM_IS_MODULATABLE_PER_CHANNEL ? "true" : "false");
       _isModulatablePerPortLabel->setText(i.flags & CLAP_PARAM_IS_MODULATABLE_PER_PORT ? "true" : "false");
 

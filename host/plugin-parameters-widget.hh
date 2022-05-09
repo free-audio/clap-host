@@ -91,11 +91,13 @@ private:
    QLabel *_nameLabel = nullptr;
    QLabel *_moduleLabel = nullptr;
    QLabel *_isAutomatableLabel = nullptr;
-   QLabel *_isAutomatablePerNoteLabel = nullptr;
+   QLabel *_isAutomatablePerNoteIdLabel = nullptr;
+   QLabel *_isAutomatablePerKeyLabel = nullptr;
    QLabel *_isAutomatablePerChannelLabel = nullptr;
    QLabel *_isAutomatablePerPortLabel = nullptr;
    QLabel *_isModulatableLabel = nullptr;
-   QLabel *_isModulatablePerNoteLabel = nullptr;
+   QLabel *_isModulatablePerNoteIdLabel = nullptr;
+   QLabel *_isModulatablePerKeyLabel = nullptr;
    QLabel *_isModulatablePerChannelLabel = nullptr;
    QLabel *_isModulatablePerPortLabel = nullptr;
    QLabel *_isPeriodicLabel = nullptr;
