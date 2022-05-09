@@ -299,11 +299,11 @@ void PluginParametersWidget::updateParamInfo() {
       _moduleLabel->setText(i.module);
 
       _isAutomatableLabel->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE ? "true" : "false");
-      _isAutomatablePerNoteLabel->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE_PER_NOTE ? "true" : "false");
+      _isAutomatablePerNoteLabel->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE_PER_NOTE_ID ? "true" : "false");
       _isAutomatablePerChannelLabel->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE_PER_CHANNEL ? "true" : "false");
       _isAutomatablePerPortLabel->setText(i.flags & CLAP_PARAM_IS_AUTOMATABLE_PER_PORT ? "true" : "false");
       _isModulatableLabel->setText(i.flags & CLAP_PARAM_IS_MODULATABLE ? "true" : "false");
-      _isModulatablePerNoteLabel->setText(i.flags & CLAP_PARAM_IS_MODULATABLE_PER_NOTE ? "true" : "false");
+      _isModulatablePerNoteLabel->setText(i.flags & CLAP_PARAM_IS_MODULATABLE_PER_NOTE_ID ? "true" : "false");
       _isModulatablePerChannelLabel->setText(i.flags & CLAP_PARAM_IS_MODULATABLE_PER_CHANNEL ? "true" : "false");
       _isModulatablePerPortLabel->setText(i.flags & CLAP_PARAM_IS_MODULATABLE_PER_PORT ? "true" : "false");
 
