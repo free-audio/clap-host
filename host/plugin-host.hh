@@ -116,13 +116,12 @@ private:
 
    void scanQuickControls();
    void quickControlsSetSelectedPage(clap_id pageId);
-   static void clapQuickControlsChanged(const clap_host *host,
-                                        clap_quick_controls_changed_flags flags);
+   static void clapQuickControlsChanged(const clap_host *host);
 
    static bool clapRegisterTimer(const clap_host *host, uint32_t period_ms, clap_id *timer_id);
    static bool clapUnregisterTimer(const clap_host *host, clap_id timer_id);
-   static bool clapRegisterPosixFd(const clap_host *host, int fd, int flags);
-   static bool clapModifyPosixFd(const clap_host *host, int fd, int flags);
+   static bool clapRegisterPosixFd(const clap_host *host, int fd, clap_posix_fd_flags_t flags);
+   static bool clapModifyPosixFd(const clap_host *host, int fd, clap_posix_fd_flags_t flags);
    static bool clapUnregisterPosixFd(const clap_host *host, int fd);
    void eventLoopSetFdNotifierFlags(int fd, int flags);
 
@@ -181,6 +180,7 @@ private:
       PluginHost::clapModifyPosixFd,
       PluginHost::clapUnregisterPosixFd,
    };
+
    static const constexpr clap_host_thread_check _hostThreadCheck = {
       PluginHost::clapIsMainThread,
       PluginHost::clapIsAudioThread,

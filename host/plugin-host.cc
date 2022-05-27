@@ -521,7 +521,7 @@ bool PluginHost::clapUnregisterTimer(const clap_host *host, clap_id timer_id) {
    return true;
 }
 
-bool PluginHost::clapRegisterPosixFd(const clap_host *host, int fd, int flags) {
+bool PluginHost::clapRegisterPosixFd(const clap_host *host, int fd, clap_posix_fd_flags_t flags) {
    checkForMainThread();
 
    auto h = fromHost(host);
@@ -540,7 +540,7 @@ bool PluginHost::clapRegisterPosixFd(const clap_host *host, int fd, int flags) {
    return true;
 }
 
-bool PluginHost::clapModifyPosixFd(const clap_host *host, int fd, int flags) {
+bool PluginHost::clapModifyPosixFd(const clap_host *host, int fd, clap_posix_fd_flags_t flags) {
    checkForMainThread();
 
    auto h = fromHost(host);
@@ -1178,9 +1178,7 @@ void PluginHost::scanQuickControls() {
    }
 
    quickControlsPagesChanged();
-
-   auto pageId = _pluginQuickControls->get_selected(_plugin);
-   quickControlsSetSelectedPage(pageId == CLAP_INVALID_ID ? firstPageId : pageId);
+   quickControlsSetSelectedPage(firstPageId);
 }
 
 void PluginHost::quickControlsSetSelectedPage(clap_id pageId) {
@@ -1208,13 +1206,9 @@ void PluginHost::setQuickControlsSelectedPageByHost(clap_id page_id) {
    checkForMainThread();
 
    _quickControlsSelectedPage = page_id;
-
-   if (_pluginQuickControls && _pluginQuickControls->select)
-      _pluginQuickControls->select(_plugin, page_id);
 }
 
-void PluginHost::clapQuickControlsChanged(const clap_host *host,
-                                          clap_quick_controls_changed_flags flags) {
+void PluginHost::clapQuickControlsChanged(const clap_host *host) {
    checkForMainThread();
 
    auto h = fromHost(host);
@@ -1225,13 +1219,7 @@ void PluginHost::clapQuickControlsChanged(const clap_host *host,
       throw std::logic_error(msg.str());
    }
 
-   if (flags & CLAP_QUICK_CONTROLS_PAGES_CHANGED)
-      h->scanQuickControls();
-
-   if (flags & CLAP_QUICK_CONTROLS_SELECTED_PAGE_CHANGED) {
-      auto selectedPageId = h->_pluginQuickControls->get_selected(h->_plugin);
-      h->quickControlsSetSelectedPage(selectedPageId);
-   }
+   h->scanQuickControls();
 }
 
 bool PluginHost::loadNativePluginPreset(const std::string &path) {
