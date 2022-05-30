@@ -29,6 +29,10 @@
                 "UsePkgConfig": {
                     "type": "BOOL",
                     "value": false
+                },
+                "FEATURE_appstore_compliant": {
+                    "type": "BOOL",
+                    "value": true
                 }
             }
         },

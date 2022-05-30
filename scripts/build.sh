@@ -1,9 +1,5 @@
 #! /bin/bash -e
 
-if [[ ! -x vcpkg/vcpkg ]] ; then
-  vcpkg/bootstrap-vcpkg.sh
-fi
-
 cpu="$(uname -m)"
 case "$cpu" in
 x86_64)
@@ -33,6 +29,12 @@ if [[ "$1" != "" ]]; then
   triplet="$1"
 fi
 
+if [[ ! -x vcpkg/vcpkg ]] ; then
+  vcpkg/bootstrap-vcpkg.sh
+else
+  vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_option upgrade --no-dry-run --debug
+fi
+
 vcpkg_triplet="--triplet ${triplet}-clap-host --host-triplet ${triplet}-clap-host"
 cmake_triplet="-DVCPKG_TARGET_TRIPLET=${triplet}-clap-host -DCMAKE_VCPKG_HOST_TRIPLET=${triplet}-clap-host"
 
@@ -41,6 +43,8 @@ vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_triplet install --r
 
 # save space
 rm -rf vcpkg/buildtrees
+
+vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_options upgrade --debug
 
 cmake --preset $cmake_preset $cmake_triplet
 cmake --build --preset $cmake_preset --config Release --target clap-host
