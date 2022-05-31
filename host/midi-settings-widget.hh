@@ -2,7 +2,7 @@
 
 #include <QWidget>
 
-#include <RtMidi.h>
+#include <rtmidi/RtMidi.h>
 
 class MidiSettings;
 

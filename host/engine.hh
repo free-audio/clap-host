@@ -10,7 +10,7 @@
 #include <QWidget>
 
 #include <RtAudio.h>
-#include <RtMidi.h>
+#include <rtmidi/RtMidi.h>
 
 class Application;
 class Settings;
