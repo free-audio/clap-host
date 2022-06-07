@@ -1,4 +1,4 @@
-﻿#include <exception>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -175,8 +175,10 @@ void PluginHost::unload() {
 
    deactivate();
 
-   _plugin->destroy(_plugin);
-   _plugin = nullptr;
+   if (_plugin) {
+      _plugin->destroy(_plugin);
+      _plugin = nullptr;
+   }
    _pluginGui = nullptr;
    _pluginTimerSupport = nullptr;
    _pluginPosixFdSupport = nullptr;
