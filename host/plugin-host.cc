@@ -868,7 +868,8 @@ void PluginHost::paramFlushOnMainThread() {
    _evIn.clear();
    _evOut.clear();
 
-   _pluginParams->flush(_plugin, _evIn.clapInputEvents(), _evOut.clapOutputEvents());
+   if (canUsePluginParams())
+      _pluginParams->flush(_plugin, _evIn.clapInputEvents(), _evOut.clapOutputEvents());
    handlePluginOutputEvents();
 
    _evOut.clear();
@@ -974,6 +975,9 @@ void PluginHost::scanParams() { clapParamsRescan(&host_, CLAP_PARAM_RESCAN_ALL);
 void PluginHost::clapParamsRescan(const clap_host *host, uint32_t flags) {
    checkForMainThread();
    auto h = fromHost(host);
+
+   if (!h->canUsePluginParams())
+      return;
 
    // 1. it is forbidden to use CLAP_PARAM_RESCAN_ALL if the plugin is active
    if (h->isPluginActive() && (flags & CLAP_PARAM_RESCAN_ALL)) {
@@ -1113,6 +1117,10 @@ void PluginHost::clapParamsRequestFlush(const clap_host *host) {
 
 double PluginHost::getParamValue(const clap_param_info &info) {
    checkForMainThread();
+
+   if (!canUsePluginParams())
+      return 0;
+
    double value;
    if (_pluginParams->get_value(_plugin, info.id, &value))
       return value;
@@ -1299,10 +1307,19 @@ bool PluginHost::isPluginSleeping() const { return _state == ActiveAndSleeping; 
 QString PluginHost::paramValueToText(clap_id paramId, double value) {
    std::array<char, 256> buffer;
 
+   if (!canUsePluginParams())
+      return "-";
+
    if (_pluginParams->value_to_text(_plugin, paramId, value, buffer.data(), buffer.size()))
       return buffer.data();
 
    return QString::number(value);
+}
+
+bool PluginHost::canUsePluginParams() const noexcept {
+   return _pluginParams && _pluginParams->count && _pluginParams->flush &&
+          _pluginParams->get_info && _pluginParams->get_value && _pluginParams->text_to_value &&
+          _pluginParams->value_to_text;
 }
 
 bool PluginHost::canUsePluginGui() const noexcept {

@@ -138,6 +138,7 @@ private:
 
    static void clapStateMarkDirty(const clap_host *host);
 
+   bool canUsePluginParams() const noexcept;
    bool canUsePluginGui() const noexcept;
    static const char *getCurrentClapGuiApi();
 
