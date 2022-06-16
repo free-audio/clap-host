@@ -133,6 +133,26 @@ void MainWindow::showAboutDialog() {
    dialog.exec();
 }
 
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+   Engine *engine = _application.engine();
+   
+   for (int i = 0; i < 8; i++) {
+      if (0 == __sync_val_compare_and_swap(&engine->keyboardNoteData[i], 0, event->key())) {
+         break;
+      }
+   }
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event) {
+   Engine *engine = _application.engine();
+   
+   for (int i = 0; i < 8; i++) {
+      if (0 == __sync_val_compare_and_swap(&engine->keyboardNoteData[i], 0, 0x8000 | event->key())) {
+         break;
+      }
+   }
+}
+
 void MainWindow::closeEvent(QCloseEvent *event) {
    super::closeEvent(event);
    qApp->quit();

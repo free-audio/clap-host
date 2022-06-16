@@ -170,6 +170,33 @@ int Engine::audioCallback(void *outputBuffer,
 
    thiz->_pluginHost->processBegin(frameCount);
 
+   for (int i = 0; i < 8; i++) {
+      uint32_t data;
+      do data = thiz->keyboardNoteData[i]; 
+      while (data != __sync_val_compare_and_swap(&thiz->keyboardNoteData[i], data, 0));
+      bool release = data & 0x8000;
+      data &= ~0x8000;
+      uint32_t note = 0;
+      
+      if (data == 'Z') note = 48; if (data == 'S') note = 49; if (data == 'X') note = 50; if (data == 'D') note = 51;
+      if (data == 'C') note = 52; if (data == 'V') note = 53; if (data == 'G') note = 54; if (data == 'B') note = 55;
+      if (data == 'H') note = 56; if (data == 'N') note = 57; if (data == 'J') note = 58; if (data == 'M') note = 59;
+      if (data == ',') note = 60; if (data == 'l') note = 61; if (data == '.') note = 62; if (data == ';') note = 63;
+      if (data == '/') note = 64; if (data == 'Q') note = 60; if (data == '2') note = 61; if (data == 'W') note = 62;
+      if (data == '3') note = 63; if (data == 'E') note = 64; if (data == 'R') note = 65; if (data == '5') note = 66;
+      if (data == 'T') note = 67; if (data == '6') note = 68; if (data == 'Y') note = 69; if (data == '7') note = 70;
+      if (data == 'U') note = 71; if (data == 'I') note = 72; if (data == '9') note = 73; if (data == 'O') note = 74;
+      if (data == '0') note = 75; if (data == 'P') note = 76; if (data == '[') note = 77; if (data == '=') note = 78;
+      if (data == ']') note = 79;
+      
+      if (!note) {
+      } else if (release) {
+         thiz->_pluginHost->processNoteOff(0, 0, note, 100);
+      } else {
+         thiz->_pluginHost->processNoteOn(0, 0, note, 100);
+      }
+   }
+
    auto &midiBuf = thiz->_midiInBuffer;
    while (thiz->_midiIn && thiz->_midiIn->isPortOpen()) {
       auto msgTime = thiz->_midiIn->getMessage(&midiBuf);

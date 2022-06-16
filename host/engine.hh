@@ -51,6 +51,8 @@ public:
 public:
    void callPluginIdle();
 
+   volatile uint32_t keyboardNoteData[8];
+
 private:
    friend class AudioPlugin;
    friend class PluginHost;
