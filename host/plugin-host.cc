@@ -274,7 +274,7 @@ static clap_window makeClapWindow(WId window) {
    w.api = CLAP_WINDOW_API_COCOA;
    w.cocoa = reinterpret_cast<clap_nsview>(window);
 #elif defined(Q_OS_WIN)
-   w.api = CLAP_WINDOW_API_COCOA;
+   w.api = CLAP_WINDOW_API_WIN32;
    w.win32 = reinterpret_cast<clap_hwnd>(window);
 #endif
 
