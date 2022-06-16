@@ -173,7 +173,11 @@ int Engine::audioCallback(void *outputBuffer,
    for (int i = 0; i < 8; i++) {
       uint32_t data;
       do data = thiz->keyboardNoteData[i]; 
+#ifdef _WIN32
+      while (data != InterlockedCompareExchange((LONG volatile *) &thiz->keyboardNoteData[i], 0, data));
+#else
       while (data != __sync_val_compare_and_swap(&thiz->keyboardNoteData[i], data, 0));
+#endif
       bool release = data & 0x8000;
       data &= ~0x8000;
       uint32_t note = 0;
