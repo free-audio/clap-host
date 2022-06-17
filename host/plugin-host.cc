@@ -666,6 +666,7 @@ void PluginHost::processNoteOn(int sampleOffset, int channel, int key, int veloc
    ev.port_index = 0;
    ev.key = key;
    ev.channel = channel;
+   ev.note_id = -1;
    ev.velocity = velocity / 127.0;
 
    _evIn.push(&ev.header);
@@ -683,6 +684,7 @@ void PluginHost::processNoteOff(int sampleOffset, int channel, int key, int velo
    ev.port_index = 0;
    ev.key = key;
    ev.channel = channel;
+   ev.note_id = -1;
    ev.velocity = velocity / 127.0;
 
    _evIn.push(&ev.header);
@@ -761,6 +763,7 @@ void PluginHost::process() {
          ev.port_index = 0;
          ev.key = -1;
          ev.channel = -1;
+         ev.note_id = -1;
          ev.value = value.value;
          _evIn.push(&ev.header);
       });
@@ -777,6 +780,7 @@ void PluginHost::process() {
       ev.port_index = 0;
       ev.key = -1;
       ev.channel = -1;
+      ev.note_id = -1;
       ev.amount = value.value;
       _evIn.push(&ev.header);
    });
