@@ -34,7 +34,14 @@ void PluginParam::printInfo(std::ostream &os) const {
 }
 
 bool PluginParam::isInfoEqualTo(const clap_param_info &info) const {
-   return !std::memcmp(&info, &_info, sizeof(clap_param_info));
+   return info.cookie == _info.cookie &&
+      info.default_value == _info.default_value &&
+      info.max_value == _info.max_value &&
+      info.min_value == _info.min_value &&
+      info.flags == _info.flags &&
+      info.id == _info.id &&
+      !::std::strncmp(info.name, _info.name, sizeof (info.name)) &&
+      !::std::strncmp(info.module, _info.module, sizeof (info.module));
 }
 
 bool PluginParam::isInfoCriticallyDifferentTo(const clap_param_info &info) const {
