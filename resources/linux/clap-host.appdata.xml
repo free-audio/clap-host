@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- https://www.freedesktop.org/software/appstream/docs/ -->
+<component type="desktop">
+  <id>org.cleveraudio.clap-host</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>CLAP Host</name>
+  <developer_name>CLAP</developer_name>
+  <summary>Example host for CLAP</summary>
+  <description>
+    <p>Example host for CLAP.</p>
+  </description>
+  <content_rating type="oars-1.1" />
+  <recommends>
+    <memory>256</memory>
+  </recommends>
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+    <display_length compare="ge">medium</display_length>
+  </supports>
+  <url type="homepage">https://github.com/free-audio/clap-host</url>
+  <releases>
+    <release version="1.0" date="2022-06-22" />
+  </releases>
+</component>

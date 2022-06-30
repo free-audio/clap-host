@@ -1,0 +1,16 @@
+[Desktop Entry]
+Version=1.5
+Type=Application
+Name=CLAP Host
+GenericName=CLAP Host
+NoDisplay=false
+Comment=Example CLAP Host
+Icon=org.cleveraudio.clap-host
+DBusActivatable=false
+Exec=clap-host
+Terminal=false
+MimeType=
+Categories=AudioVideo
+Keywords=daw;audio;midi;clap
+StartupNotify=true
+StartupWMClass=org.cleveraudio.clap-host
