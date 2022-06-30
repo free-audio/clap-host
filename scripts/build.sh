@@ -13,8 +13,8 @@ if [[ $(uname) = Linux ]] ; then
   cmake_preset="ninja-vcpkg"
   triplet=$cpu-linux
   buildtrees=vcpkg/buildtrees
-  rtaudio_opts=alsa
-  rtmidi_opts=alsa
+  rtaudio_opts='[alsa]'
+  rtmidi_opts='[alsa]'
 elif [[ $(uname) = Darwin ]] ; then
   QT_FEATURES=",harfbuzz"
   cmake_preset="ninja-vcpkg"
@@ -27,7 +27,7 @@ else
   cmake_preset="vs-vcpkg"
   triplet=$cpu-win
   buildtrees="C:\B"
-  rtaudio_opts=asio
+  rtaudio_opts='[asio]'
   rtmidi_opts=
 fi
 
@@ -45,7 +45,7 @@ vcpkg_triplet="--triplet ${triplet}-clap-host --host-triplet ${triplet}-clap-hos
 cmake_triplet="-DVCPKG_TARGET_TRIPLET=${triplet}-clap-host -DCMAKE_VCPKG_HOST_TRIPLET=${triplet}-clap-host"
 
 vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_triplet install --recurse \
-  "rtmidi[${rtmidi_opts}]" "rtaudio[${rtaudio_opts}]" "qtbase[core,png,widgets,doubleconversion,concurrent,appstore-compliant,freetype${QT_FEATURES}]"
+  "rtmidi${rtmidi_opts}" "rtaudio${rtaudio_opts}" "qtbase[core,png,widgets,doubleconversion,concurrent,appstore-compliant,freetype${QT_FEATURES}]"
 
 # save space
 rm -rf vcpkg/buildtrees
