@@ -6,6 +6,8 @@ This is not ready yet. Pass your way unless you know what your are doing.
 
 This repo serves as an example to demonstrate how to create a CLAP host.
 
+<br/><a href="https://repology.org/project/clap-host/versions" target="_blank" rel="noopener" title="Packaging status"><img src="https://repology.org/badge/vertical-allrepos/clap-host.svg"></a>
+
 # Notes on static build vs dynamic build
 
 The host uses Qt for its GUI.
