@@ -40,6 +40,11 @@ endif()
 
 add_subdirectory(host)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  install_files(share/applications resources/linux/org.cleveraudio.clap-host.desktop)
+  install_files(share/metainfo resources/linux/org.cleveraudio.appdata.xml)
+endif()
+
 ###########
 ## CPACK ##
 ###########
