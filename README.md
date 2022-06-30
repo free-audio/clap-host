@@ -2,15 +2,15 @@
 
 - [Minimal Clap Host](#minimal-clap-host)
 - [Notes on static build vs dynamic build](#notes-on-static-build-vs-dynamic-build)
-  - [Building on macOS](#building-on-macos)
-    - [dynamic build using brew (recommended)](#dynamic-build-using-brew-recommended)
-    - [static build using vcpkg](#static-build-using-vcpkg)
-  - [Building on Windows](#building-on-windows)
-    - [Enable long path support](#enable-long-path-support)
-    - [static build](#static-build)
-  - [Building on Linux](#building-on-linux)
-    - [dynamic build using system libraries](#dynamic-build-using-system-libraries)
-    - [static build using vcpkg](#static-build-using-vcpkg-1)
+- [Building on macOS](#building-on-macos)
+  - [dynamic build using brew (recommended)](#dynamic-build-using-brew-recommended)
+  - [static build using vcpkg](#static-build-using-vcpkg)
+- [Building on Windows](#building-on-windows)
+  - [Enable long path support](#enable-long-path-support)
+  - [static build](#static-build)
+- [Building on Linux](#building-on-linux)
+  - [dynamic build using system libraries](#dynamic-build-using-system-libraries)
+  - [static build using vcpkg](#static-build-using-vcpkg-1)
 
 # Minimal Clap Host
 
@@ -29,9 +29,9 @@ Static builds are convenient for deployment as they are self containded.
 Dynamic builds will get your started quickly if your system provides Qt6.
 Static builds will require more time and space.
 
-## Building on macOS
+# Building on macOS
 
-### dynamic build using brew (recommended)
+## dynamic build using brew (recommended)
 
 ```shell
 # Install dependencies
@@ -46,7 +46,7 @@ cmake --preset ninja-system
 cmake --build --preset ninja-system
 ```
 
-### static build using vcpkg
+## static build using vcpkg
 
 ```shell
 # Install build tools
@@ -58,9 +58,9 @@ cd clap-host
 scripts/build.sh
 ```
 
-## Building on Windows
+# Building on Windows
 
-### Enable long path support
+## Enable long path support
 
 Make sure your system supports long paths. Run this in an administrator PowerShell:
 
@@ -70,7 +70,7 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name
 
 Reference: https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
 
-### static build
+## static build
 
 Install **Visual Studio 2022**; you can install it from the **Microsoft Store**. It can also install **git** and **CMake** for you.
 
@@ -84,9 +84,9 @@ cd c-h
 scripts/build.sh
 ```
 
-## Building on Linux
+# Building on Linux
 
-### dynamic build using system libraries
+## dynamic build using system libraries
 
 ```bash
 # on archlinux, adapt to your distribution and package manager
@@ -98,7 +98,7 @@ cmake --preset ninja-system
 cmake --build --preset ninja-system
 ```
 
-### static build using vcpkg
+## static build using vcpkg
 
 ```bash
 git clone --recurse-submodules https://github.com/free-audio/clap-host
