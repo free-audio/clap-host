@@ -1,3 +1,5 @@
+<br/><a href="https://repology.org/project/clap-host/versions" target="_blank" rel="noopener" title="Packaging status"><img src="https://repology.org/badge/vertical-allrepos/clap-host.svg"></a>
+
 - [Minimal Clap Host](#minimal-clap-host)
 - [Notes on static build vs dynamic build](#notes-on-static-build-vs-dynamic-build)
   - [Building on macOS](#building-on-macos)
@@ -13,8 +15,6 @@
 # Minimal Clap Host
 
 This repo serves as an example to demonstrate how to create a CLAP host.
-
-<br/><a href="https://repology.org/project/clap-host/versions" target="_blank" rel="noopener" title="Packaging status"><img src="https://repology.org/badge/vertical-allrepos/clap-host.svg"></a>
 
 # Notes on static build vs dynamic build
 
