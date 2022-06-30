@@ -1,3 +1,15 @@
+- [WARNING UNDER CONSTRUCTION!](#warning-under-construction)
+- [Minimal Clap Host](#minimal-clap-host)
+- [Notes on static build vs dynamic build](#notes-on-static-build-vs-dynamic-build)
+  - [Building on various platforms](#building-on-various-platforms)
+    - [macOS, dynamic build with brew (recommended)](#macos-dynamic-build-with-brew-recommended)
+    - [macOS with vcpkg](#macos-with-vcpkg)
+    - [Windows](#windows)
+      - [Enable long path support](#enable-long-path-support)
+      - [Build](#build)
+    - [Linux, using system libraries (dynamic)](#linux-using-system-libraries-dynamic)
+    - [Linux, using vcpkg (static)](#linux-using-vcpkg-static)
+
 # WARNING UNDER CONSTRUCTION!
 
 This is not ready yet. Pass your way unless you know what your are doing.
