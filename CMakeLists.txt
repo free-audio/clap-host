@@ -41,8 +41,9 @@ endif()
 add_subdirectory(host)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  install_files(share/applications resources/linux/org.cleveraudio.clap-host.desktop)
-  install_files(share/metainfo resources/linux/org.cleveraudio.appdata.xml)
+  install(FILES resources/linux/org.cleveraudio.clap-host.desktop DESTINATION share/applications)
+  install(FILES resources/linux/org.cleveraudio.appdata.xml DESTINATION share/metainfo)
+  install(FILES "clap/artwork/CLAP Full Logo.svg" DESTINATION share/icons/hicolor/scalable/apps RENAME org.cleveraudio.clap-host.svg)
 endif()
 
 ###########
