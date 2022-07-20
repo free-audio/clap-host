@@ -144,6 +144,7 @@ private:
 
    void paramFlushOnMainThread();
    void handlePluginOutputEvents();
+   void generatePluginInputEvents();
 
 private:
    Engine &_engine;

@@ -750,6 +750,41 @@ void PluginHost::process() {
    _process.audio_outputs_count = 1;
 
    _evOut.clear();
+   generatePluginInputEvents();
+
+   if (isPluginSleeping()) {
+      if (!_scheduleProcess && _evIn.empty())
+         // The plugin is sleeping, there is no request to wake it up and there are no events to
+         // process
+         return;
+
+      _scheduleProcess = false;
+      if (!_plugin->start_processing(_plugin)) {
+         // the plugin failed to start processing
+         setPluginState(ActiveWithError);
+         return;
+      }
+
+      setPluginState(ActiveAndProcessing);
+   }
+
+   int32_t status = CLAP_PROCESS_SLEEP;
+   if (_plugin && _plugin->process && isPluginProcessing())
+      status = _plugin->process(_plugin, &_process);
+
+   handlePluginOutputEvents();
+
+   _evOut.clear();
+   _evIn.clear();
+
+   _engineToAppValueQueue.producerDone();
+
+   // TODO: send plugin to sleep if possible
+
+   g_thread_type = ThreadType::Unknown;
+}
+
+void PluginHost::generatePluginInputEvents() {
    _appToEngineValueQueue.consume(
       [this](clap_id param_id, const AppToEngineParamQueueValue &value) {
          clap_event_param_value ev;
@@ -784,37 +819,6 @@ void PluginHost::process() {
       ev.amount = value.value;
       _evIn.push(&ev.header);
    });
-
-   if (isPluginSleeping()) {
-      if (!_scheduleProcess && _evIn.empty())
-         // The plugin is sleeping, there is no request to wake it up and there are no events to
-         // process
-         return;
-
-      _scheduleProcess = false;
-      if (!_plugin->start_processing(_plugin)) {
-         // the plugin failed to start processing
-         setPluginState(ActiveWithError);
-         return;
-      }
-
-      setPluginState(ActiveAndProcessing);
-   }
-
-   int32_t status = CLAP_PROCESS_SLEEP;
-   if (_plugin && _plugin->process && isPluginProcessing())
-      status = _plugin->process(_plugin, &_process);
-
-   handlePluginOutputEvents();
-
-   _evOut.clear();
-   _evIn.clear();
-
-   _engineToAppValueQueue.producerDone();
-
-   // TODO: send plugin to sleep if possible
-
-   g_thread_type = ThreadType::Unknown;
 }
 
 void PluginHost::handlePluginOutputEvents() {
@@ -872,11 +876,14 @@ void PluginHost::paramFlushOnMainThread() {
    _evIn.clear();
    _evOut.clear();
 
+   generatePluginInputEvents();
+
    if (canUsePluginParams())
       _pluginParams->flush(_plugin, _evIn.clapInputEvents(), _evOut.clapOutputEvents());
    handlePluginOutputEvents();
 
    _evOut.clear();
+   _engineToAppValueQueue.producerDone();
 }
 
 void PluginHost::idle() {
@@ -963,6 +970,7 @@ void PluginHost::setParamValueByHost(PluginParam &param, double value) {
 
    _appToEngineValueQueue.set(param.info().id, {param.info().cookie, value});
    _appToEngineValueQueue.producerDone();
+   clapParamsRequestFlush(&host_);
 }
 
 void PluginHost::setParamModulationByHost(PluginParam &param, double value) {
@@ -972,6 +980,7 @@ void PluginHost::setParamModulationByHost(PluginParam &param, double value) {
 
    _appToEngineModQueue.set(param.info().id, {param.info().cookie, value});
    _appToEngineModQueue.producerDone();
+   clapParamsRequestFlush(&host_);
 }
 
 void PluginHost::scanParams() { clapParamsRescan(&host_, CLAP_PARAM_RESCAN_ALL); }
