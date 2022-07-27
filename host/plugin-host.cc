@@ -722,6 +722,9 @@ void PluginHost::processCC(int sampleOffset, int channel, int cc, int value) {
 void PluginHost::process() {
    checkForAudioThread();
 
+   if (!_plugin)
+      return;
+
    // Can't process a plugin that is not active
    if (!isPluginActive())
       return;
@@ -769,7 +772,7 @@ void PluginHost::process() {
    }
 
    int32_t status = CLAP_PROCESS_SLEEP;
-   if (_plugin && _plugin->process && isPluginProcessing())
+   if (isPluginProcessing())
       status = _plugin->process(_plugin, &_process);
 
    handlePluginOutputEvents();
