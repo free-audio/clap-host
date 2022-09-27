@@ -34,7 +34,9 @@ void PluginParam::printInfo(std::ostream &os) const {
 }
 
 bool PluginParam::isInfoEqualTo(const clap_param_info &info) const {
-   return info.cookie == _info.cookie &&
+   extern bool zeroOutParamCookies;
+   bool cookiesSame = zeroOutParamCookies || (info.cookie == _info.cookie);
+   return cookiesSame &&
       info.default_value == _info.default_value &&
       info.max_value == _info.max_value &&
       info.min_value == _info.min_value &&

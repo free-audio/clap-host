@@ -44,3 +44,4 @@ private:
    QString _pluginPath;
    int _pluginIndex = 0;
 };
+

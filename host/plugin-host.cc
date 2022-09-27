@@ -15,6 +15,8 @@
 
 #include <clap/helpers/reducing-param-queue.hxx>
 
+extern bool zeroOutParamCookies;
+
 enum class ThreadType {
    Unknown,
    MainThread,
@@ -798,6 +800,8 @@ void PluginHost::generatePluginInputEvents() {
          ev.header.size = sizeof(ev);
          ev.param_id = param_id;
          ev.cookie = value.cookie;
+         if (zeroOutParamCookies)
+            ev.cookie = nullptr;
          ev.port_index = 0;
          ev.key = -1;
          ev.channel = -1;
@@ -815,6 +819,8 @@ void PluginHost::generatePluginInputEvents() {
       ev.header.size = sizeof(ev);
       ev.param_id = param_id;
       ev.cookie = value.cookie;
+      if (zeroOutParamCookies)
+          ev.cookie = nullptr;
       ev.port_index = 0;
       ev.key = -1;
       ev.channel = -1;
@@ -971,7 +977,9 @@ void PluginHost::setParamValueByHost(PluginParam &param, double value) {
 
    param.setValue(value);
 
-   _appToEngineValueQueue.set(param.info().id, {param.info().cookie, value});
+   auto ck = param.info().cookie;
+   if (zeroOutParamCookies) ck = nullptr;
+   _appToEngineValueQueue.set(param.info().id, {ck, value});
    _appToEngineValueQueue.producerDone();
    clapParamsRequestFlush(&host_);
 }
@@ -981,7 +989,9 @@ void PluginHost::setParamModulationByHost(PluginParam &param, double value) {
 
    param.setModulation(value);
 
-   _appToEngineModQueue.set(param.info().id, {param.info().cookie, value});
+   auto ck = param.info().cookie;
+   if (zeroOutParamCookies) ck = nullptr;
+   _appToEngineModQueue.set(param.info().id, {ck, value});
    _appToEngineModQueue.producerDone();
    clapParamsRequestFlush(&host_);
 }
