@@ -797,7 +797,7 @@ void PluginHost::generatePluginInputEvents() {
          ev.header.flags = 0;
          ev.header.size = sizeof(ev);
          ev.param_id = param_id;
-         ev.cookie = value.cookie;
+         ev.cookie = _shouldProvideCookie ? value.cookie : nullptr;
          ev.port_index = 0;
          ev.key = -1;
          ev.channel = -1;
@@ -814,7 +814,7 @@ void PluginHost::generatePluginInputEvents() {
       ev.header.flags = 0;
       ev.header.size = sizeof(ev);
       ev.param_id = param_id;
-      ev.cookie = value.cookie;
+      ev.cookie = _shouldProvideCookie ? value.cookie : nullptr;
       ev.port_index = 0;
       ev.key = -1;
       ev.channel = -1;
