@@ -21,6 +21,7 @@
 #include "plugin-param.hh"
 
 class Engine;
+class PluginHostSettings;
 class PluginHost final : public QObject {
    Q_OBJECT;
 
@@ -40,9 +41,6 @@ public:
 
    void setPorts(int numInputs, float **inputs, int numOutputs, float **outputs);
    void setParentWindow(WId parentWindow);
-
-   void setShouldProvideCookie(bool shouldProvide) noexcept { _shouldProvideCookie = shouldProvide; }
-   bool shouldProvideCookie() const noexcept { return _shouldProvideCookie; }
 
    void processBegin(int nframes);
    void processNoteOn(int sampleOffset, int channel, int key, int velocity);
@@ -151,6 +149,7 @@ private:
 
 private:
    Engine &_engine;
+   PluginHostSettings &_settings;
 
    QLibrary _library;
 
@@ -317,6 +316,4 @@ private:
    bool _isGuiFloating = false;
 
    bool _scheduleMainThreadCallback = false;
-
-   bool _shouldProvideCookie = true;
 };

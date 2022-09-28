@@ -11,7 +11,9 @@
 #include "application.hh"
 #include "engine.hh"
 #include "main-window.hh"
+#include "plugin-host-settings.hh"
 #include "plugin-host.hh"
+#include "settings.hh"
 
 #include <clap/helpers/reducing-param-queue.hxx>
 
@@ -24,7 +26,8 @@ enum class ThreadType {
 
 thread_local ThreadType g_thread_type = ThreadType::Unknown;
 
-PluginHost::PluginHost(Engine &engine) : QObject(&engine), _engine(engine) {
+PluginHost::PluginHost(Engine &engine)
+   : QObject(&engine), _engine(engine), _settings(engine._settings.pluginHostSettings()) {
    g_thread_type = ThreadType::MainThread;
 
    host_.host_data = this;
@@ -797,7 +800,7 @@ void PluginHost::generatePluginInputEvents() {
          ev.header.flags = 0;
          ev.header.size = sizeof(ev);
          ev.param_id = param_id;
-         ev.cookie = _shouldProvideCookie ? value.cookie : nullptr;
+         ev.cookie = _settings.shouldProvideCookie() ? value.cookie : nullptr;
          ev.port_index = 0;
          ev.key = -1;
          ev.channel = -1;
@@ -814,7 +817,7 @@ void PluginHost::generatePluginInputEvents() {
       ev.header.flags = 0;
       ev.header.size = sizeof(ev);
       ev.param_id = param_id;
-      ev.cookie = _shouldProvideCookie ? value.cookie : nullptr;
+      ev.cookie = _settings.shouldProvideCookie() ? value.cookie : nullptr;
       ev.port_index = 0;
       ev.key = -1;
       ev.channel = -1;
