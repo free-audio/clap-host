@@ -41,6 +41,8 @@ add_executable(clap-host
   settings.hh
   settings-widget.cc
   settings-widget.hh
+  tweaks-dialog.cc
+  tweaks-dialog.hh
 
   precompiled-header.hh
   )
