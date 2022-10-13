@@ -44,11 +44,6 @@ jobs:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
 
     steps:
-      - name: 'Remove old VCPKG'
-        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
-        shell: 'bash'
-        run: sudo rm -rf "$VCPKG_INSTALLATION_ROOT"
-
       - uses: actions/checkout@v2
         with:
           submodules: true
