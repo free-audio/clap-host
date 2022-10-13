@@ -42,7 +42,7 @@ else
 fi
 
 vcpkg_triplet="--triplet ${triplet}-clap-host --host-triplet ${triplet}-clap-host"
-cmake_triplet="-DVCPKG_TARGET_TRIPLET=${triplet}-clap-host -DCMAKE_VCPKG_HOST_TRIPLET=${triplet}-clap-host"
+cmake_triplet="-DVCPKG_TARGET_TRIPLET=${triplet}-clap-host -DVCPKG_HOST_TRIPLET=${triplet}-clap-host"
 
 vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_triplet install --recurse \
   "rtmidi${rtmidi_opts}" "rtaudio${rtaudio_opts}" "qtbase[core,png,widgets,doubleconversion,concurrent,appstore-compliant,freetype${QT_FEATURES}]"
