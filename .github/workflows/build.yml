@@ -61,6 +61,10 @@ jobs:
         shell: bash
         run: vcpkg/bootstrap-vcpkg.sh
 
+      - name: 'Fetch NuGet'
+        shell: 'bash'
+        run: ./vcpkg/vcpkg fetch nuget
+
       - name: 'Setup NuGet Credentials'
         shell: 'bash'
         run: >
