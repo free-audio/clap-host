@@ -14,7 +14,9 @@ set(CLAP_HOST_BUNDLE FALSE CACHE BOOL "Produce a macOS bundle")
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+#find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt6Core CONFIG REQUIRED)
+find_package(Qt6Widgets CONFIG REQUIRED)
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang|Clang|GNU")
   add_compile_options(-fvisibility=hidden -fvisibility-inlines-hidden

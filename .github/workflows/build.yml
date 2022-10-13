@@ -136,3 +136,7 @@ jobs:
         with:
           name: clap-host-${{ matrix.artifact }}.tar.xz
           path: clap-host.tar.xz
+
+      - uses: actions/delete-package-versions@v3
+        with:
+          package-name: qtbase_${{ matrix.triplet }}-clap-host
