@@ -49,12 +49,14 @@ jobs:
           submodules: true
 
       - uses: seanmiddleditch/gha-setup-ninja@master
+        if: startsWith(matrix.os, 'win')
 
       - uses: lukka/get-cmake@latest
+        if: startsWith(matrix.os, 'win')
 
       - name: Setup MacOS
         if: startsWith(matrix.os, 'macOS')
-        run: brew install automake autoconf ninja cmake nuget
+        run: brew upgrade && brew install automake autoconf ninja cmake && brew install nuget
 
       - name: Setup Ubuntu
         if: startsWith(matrix.os, 'ubuntu')
