@@ -57,28 +57,9 @@ jobs:
 
       - uses: lukka/get-cmake@latest
 
-      - name: 'Bootstrap VCPKG'
-        shell: bash
-        run: vcpkg/bootstrap-vcpkg.sh
-
-      - name: 'Fetch NuGet'
-        shell: 'bash'
-        run: ./vcpkg/vcpkg fetch nuget
-
-      - name: 'Setup NuGet Credentials'
-        shell: 'bash'
-        run: >
-          ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1`
-          sources add
-          -source "https://nuget.pkg.github.com/free-audio/index.json"
-          -storepasswordincleartext
-          -name "GitHub"
-          -username "free-audio"
-          -password "${{ secrets.GITHUB_TOKEN }}"
-
       - name: Setup MacOS
         if: startsWith(matrix.os, 'macOS')
-        run: brew install automake autoconf ninja cmake
+        run: brew install automake autoconf ninja cmake nuget
 
       - name: Setup Ubuntu
         if: startsWith(matrix.os, 'ubuntu')
@@ -116,6 +97,26 @@ jobs:
           libxkbcommon-x11-dev
           libxrender-dev
           libatspi2.0-dev
+          nuget
+
+      - name: 'Bootstrap VCPKG'
+        shell: bash
+        run: vcpkg/bootstrap-vcpkg.sh
+
+      - name: 'Fetch NuGet'
+        shell: 'bash'
+        run: ./vcpkg/vcpkg fetch nuget
+
+      - name: 'Setup NuGet Credentials'
+        shell: 'bash'
+        run: >
+          ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1`
+          sources add
+          -source "https://nuget.pkg.github.com/free-audio/index.json"
+          -storepasswordincleartext
+          -name "GitHub"
+          -username "free-audio"
+          -password "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Build
         shell: bash
