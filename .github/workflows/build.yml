@@ -103,15 +103,23 @@ jobs:
         shell: bash
         run: vcpkg/bootstrap-vcpkg.sh
 
-      - name: 'Fetch NuGet'
-        shell: 'bash'
-        run: ./vcpkg/vcpkg fetch nuget
-
-      - name: 'Setup NuGet Credentials'
+      - name: 'Setup NuGet Credentials (windows)'
+        if: startsWith(matrix.os, 'win')
         shell: 'bash'
         run: >
           ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1`
           sources add
+          -source "https://nuget.pkg.github.com/free-audio/index.json"
+          -storepasswordincleartext
+          -name "GitHub"
+          -username "free-audio"
+          -password "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: 'Setup NuGet Credentials (unix)'
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
+        shell: 'bash'
+        run: >
+          nuget sources add
           -source "https://nuget.pkg.github.com/free-audio/index.json"
           -storepasswordincleartext
           -name "GitHub"
