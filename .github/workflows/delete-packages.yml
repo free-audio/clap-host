@@ -1,0 +1,22 @@
+name: build
+on: [workflow_dispatch]
+
+jobs:
+  delete_packages:
+    name: ${{ matrix.os }}-${{ github.workflow }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        include:
+          - os: 'ubuntu-latest'
+
+    env:
+      VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
+
+    steps:
+
+      - uses: actions/delete-package-versions@v3
+        with:
+          package-name: pthreads_x64-linux-clap-host
