@@ -1,4 +1,4 @@
-name: build
+name: delete_packages
 on: [workflow_dispatch]
 
 jobs:
