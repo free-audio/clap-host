@@ -44,7 +44,7 @@ jobs:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
 
