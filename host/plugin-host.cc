@@ -137,7 +137,11 @@ bool PluginHost::load(const QString &path, int pluginIndex) {
       qWarning() << "could not create the plugin with id: " << desc->id;
       return false;
    }
-   _plugin->init(_plugin);
+
+   if (!_plugin->init(_plugin)) {
+      qWarning() << "could not init the plugin with id: " << desc->id;
+      return false;
+   }
 
    initPluginExtensions();
    scanParams();
