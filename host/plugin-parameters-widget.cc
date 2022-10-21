@@ -19,7 +19,7 @@ PluginParametersWidget::ParamTreeItem::ParamTreeItem(ModuleTreeItem *parent, Plu
 
 QVariant PluginParametersWidget::ParamTreeItem::data(int column, int role) const {
    if (column == 0 && role == Qt::DisplayRole)
-      return param_.info().name;
+      return QString(param_.info().name);
    return {};
 }
 
