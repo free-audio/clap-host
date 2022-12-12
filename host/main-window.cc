@@ -34,7 +34,7 @@ MainWindow::MainWindow(Application &app)
    auto &pluginHost = app.engine()->pluginHost();
 
    _pluginParametersWidget = new PluginParametersWidget(nullptr, pluginHost);
-   _pluginQuickControlsWidget = new PluginQuickControlsWidget(nullptr, pluginHost);
+   _pluginRemoteControlsWidget = new PluginQuickControlsWidget(nullptr, pluginHost);
 }
 
 MainWindow::~MainWindow() {}
@@ -95,7 +95,7 @@ void MainWindow::showSettingsDialog() {
 }
 
 void MainWindow::showPluginParametersWindow() { _pluginParametersWidget->show(); }
-void MainWindow::showPluginQuickControlsWindow() { _pluginQuickControlsWidget->show(); }
+void MainWindow::showPluginQuickControlsWindow() { _pluginRemoteControlsWidget->show(); }
 
 WId MainWindow::getEmbedWindowId() { return _pluginViewWidget->winId(); }
 

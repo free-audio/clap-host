@@ -156,7 +156,7 @@ void PluginHost::initPluginExtensions() {
       return;
 
    initPluginExtension(_pluginParams, CLAP_EXT_PARAMS);
-   initPluginExtension(_pluginQuickControls, CLAP_EXT_QUICK_CONTROLS);
+   initPluginExtension(_pluginRemoteControls, CLAP_EXT_REMOTE_CONTROLS);
    initPluginExtension(_pluginAudioPorts, CLAP_EXT_AUDIO_PORTS);
    initPluginExtension(_pluginGui, CLAP_EXT_GUI);
    initPluginExtension(_pluginTimerSupport, CLAP_EXT_TIMER_SUPPORT);
@@ -194,7 +194,7 @@ void PluginHost::unload() {
    _pluginState = nullptr;
    _pluginAudioPorts = nullptr;
    _pluginParams = nullptr;
-   _pluginQuickControls = nullptr;
+   _pluginRemoteControls = nullptr;
 
    _pluginEntry->deinit();
    _pluginEntry = nullptr;
@@ -423,8 +423,8 @@ const void *PluginHost::clapExtension(const clap_host *host, const char *extensi
       return &h->_hostPosixFdSupport;
    if (!strcmp(extension, CLAP_EXT_PARAMS))
       return &h->_hostParams;
-   if (!strcmp(extension, CLAP_EXT_QUICK_CONTROLS))
-      return &h->_hostQuickControls;
+   if (!strcmp(extension, CLAP_EXT_REMOTE_CONTROLS))
+      return &h->_hostRemoteControls;
    if (!strcmp(extension, CLAP_EXT_STATE))
       return &h->_hostState;
    return nullptr;
@@ -1157,57 +1157,57 @@ double PluginHost::getParamValue(const clap_param_info &info) {
 void PluginHost::scanQuickControls() {
    checkForMainThread();
 
-   if (!_pluginQuickControls)
+   if (!_pluginRemoteControls)
       return;
 
-   if (!_pluginQuickControls->get || !_pluginQuickControls->count) {
+   if (!_pluginRemoteControls->get || !_pluginRemoteControls->count) {
       std::ostringstream msg;
-      msg << "clap_plugin_quick_controls is partially implemented.";
+      msg << "clap_plugin_remote_controls is partially implemented.";
       throw std::logic_error(msg.str());
    }
 
    quickControlsSetSelectedPage(CLAP_INVALID_ID);
-   _quickControlsPages.clear();
-   _quickControlsPagesIndex.clear();
+   _remoteControlsPages.clear();
+   _remoteControlsPagesIndex.clear();
 
-   const auto N = _pluginQuickControls->count(_plugin);
+   const auto N = _pluginRemoteControls->count(_plugin);
    if (N == 0)
       return;
 
-   _quickControlsPages.reserve(N);
-   _quickControlsPagesIndex.reserve(N);
+   _remoteControlsPages.reserve(N);
+   _remoteControlsPagesIndex.reserve(N);
 
    clap_id firstPageId = CLAP_INVALID_ID;
    for (int i = 0; i < N; ++i) {
-      auto page = std::make_unique<clap_quick_controls_page>();
-      if (!_pluginQuickControls->get(_plugin, i, page.get())) {
+      auto page = std::make_unique<clap_remote_controls_page>();
+      if (!_pluginRemoteControls->get(_plugin, i, page.get())) {
          std::ostringstream msg;
-         msg << "clap_plugin_quick_controls.get_page(" << i << ") failed, while the page count is "
+         msg << "clap_plugin_remote_controls.get_page(" << i << ") failed, while the page count is "
              << N;
          throw std::logic_error(msg.str());
       }
 
-      if (page->id == CLAP_INVALID_ID) {
+      if (page->page_id == CLAP_INVALID_ID) {
          std::ostringstream msg;
-         msg << "clap_plugin_quick_controls.get_page(" << i << ") gave an invalid page_id";
+         msg << "clap_plugin_remote_controls.get_page(" << i << ") gave an invalid page_id";
          throw std::invalid_argument(msg.str());
       }
 
       if (i == 0)
-         firstPageId = page->id;
+         firstPageId = page->page_id;
 
-      auto it = _quickControlsPagesIndex.find(page->id);
-      if (it != _quickControlsPagesIndex.end()) {
+      auto it = _remoteControlsPagesIndex.find(page->page_id);
+      if (it != _remoteControlsPagesIndex.end()) {
          std::ostringstream msg;
-         msg << "clap_plugin_quick_controls.get_page(" << i
-             << ") gave twice the same page_id:" << page->id << std::endl
-             << " 1. name: " << it->second->name << std::endl
-             << " 2. name: " << page->name;
+         msg << "clap_plugin_remote_controls.get_page(" << i
+             << ") gave twice the same page_id:" << page->page_id << std::endl
+             << " 1. name: " << it->second->page_name << std::endl
+             << " 2. name: " << page->page_name;
          throw std::invalid_argument(msg.str());
       }
 
-      _quickControlsPagesIndex.insert_or_assign(page->id, page.get());
-      _quickControlsPages.emplace_back(std::move(page));
+      _remoteControlsPagesIndex.insert_or_assign(page->page_id, page.get());
+      _remoteControlsPages.emplace_back(std::move(page));
    }
 
    quickControlsPagesChanged();
@@ -1216,43 +1216,57 @@ void PluginHost::scanQuickControls() {
 
 void PluginHost::quickControlsSetSelectedPage(clap_id pageId) {
    checkForMainThread();
-   if (pageId == _quickControlsSelectedPage)
+   if (pageId == _remoteControlsSelectedPage)
       return;
 
    if (pageId != CLAP_INVALID_ID) {
-      auto it = _quickControlsPagesIndex.find(pageId);
-      if (it == _quickControlsPagesIndex.end()) {
+      auto it = _remoteControlsPagesIndex.find(pageId);
+      if (it == _remoteControlsPagesIndex.end()) {
          std::ostringstream msg;
          msg << "quick control page_id " << pageId << " not found";
          throw std::invalid_argument(msg.str());
       }
    }
 
-   _quickControlsSelectedPage = pageId;
+   _remoteControlsSelectedPage = pageId;
    quickControlsSelectedPageChanged();
 }
 
-void PluginHost::setQuickControlsSelectedPageByHost(clap_id page_id) {
+void PluginHost::setRemoteControlsSelectedPageByHost(clap_id page_id) {
    checkForMainThread();
    Q_ASSERT(page_id != CLAP_INVALID_ID);
 
    checkForMainThread();
 
-   _quickControlsSelectedPage = page_id;
+   _remoteControlsSelectedPage = page_id;
 }
 
-void PluginHost::clapQuickControlsChanged(const clap_host *host) {
+void PluginHost::clapRemoteControlsChanged(const clap_host *host) {
    checkForMainThread();
 
    auto h = fromHost(host);
-   if (!h->_pluginQuickControls) {
+   if (!h->_pluginRemoteControls) {
       std::ostringstream msg;
-      msg << "Plugin called clap_host_quick_controls.changed() but does not provide "
-             "clap_plugin_quick_controls";
+      msg << "Plugin called clap_host_remote_controls.changed() but does not provide "
+             "clap_plugin_remote_controls";
       throw std::logic_error(msg.str());
    }
 
    h->scanQuickControls();
+}
+
+void PluginHost::clapRemoteControlsSuggestPage(const clap_host *host, clap_id page_id) {
+   checkForMainThread();
+
+   auto h = fromHost(host);
+   if (!h->_pluginRemoteControls) {
+      std::ostringstream msg;
+      msg << "Plugin called clap_host_remote_controls.suggest_page() but does not provide "
+             "clap_plugin_remote_controls";
+      throw std::logic_error(msg.str());
+   }
+
+   // TODO
 }
 
 bool PluginHost::loadNativePluginPreset(const std::string &path) {

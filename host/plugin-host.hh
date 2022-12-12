@@ -62,10 +62,10 @@ public:
    void setParamModulationByHost(PluginParam &param, double value);
 
    auto &params() const { return _params; }
-   auto &quickControlsPages() const { return _quickControlsPages; }
-   auto &quickControlsPagesIndex() const { return _quickControlsPagesIndex; }
-   auto quickControlsSelectedPage() const { return _quickControlsSelectedPage; }
-   void setQuickControlsSelectedPageByHost(clap_id page_id);
+   auto &remoteControlsPages() const { return _remoteControlsPages; }
+   auto &remoteControlsPagesIndex() const { return _remoteControlsPagesIndex; }
+   auto remoteControlsSelectedPage() const { return _remoteControlsSelectedPage; }
+   void setRemoteControlsSelectedPageByHost(clap_id page_id);
 
    bool loadNativePluginPreset(const std::string &path);
    bool loadStateFromFile(const std::string &path);
@@ -117,7 +117,8 @@ private:
 
    void scanQuickControls();
    void quickControlsSetSelectedPage(clap_id pageId);
-   static void clapQuickControlsChanged(const clap_host *host);
+   static void clapRemoteControlsChanged(const clap_host *host);
+   static void clapRemoteControlsSuggestPage(const clap_host *host, clap_id page_id);
 
    static bool clapRegisterTimer(const clap_host *host, uint32_t period_ms, clap_id *timer_id);
    static bool clapUnregisterTimer(const clap_host *host, clap_id timer_id);
@@ -172,8 +173,9 @@ private:
       PluginHost::clapParamsClear,
       PluginHost::clapParamsRequestFlush,
    };
-   static const constexpr clap_host_quick_controls _hostQuickControls = {
-      PluginHost::clapQuickControlsChanged,
+   static const constexpr clap_host_remote_controls _hostRemoteControls = {
+      PluginHost::clapRemoteControlsChanged,
+      PluginHost::clapRemoteControlsSuggestPage,
    };
    static const constexpr clap_host_timer_support _hostTimerSupport = {
       PluginHost::clapRegisterTimer,
@@ -200,7 +202,7 @@ private:
    const clap_plugin_factory *_pluginFactory = nullptr;
    const clap_plugin *_plugin = nullptr;
    const clap_plugin_params *_pluginParams = nullptr;
-   const clap_plugin_quick_controls *_pluginQuickControls = nullptr;
+   const clap_plugin_remote_controls *_pluginRemoteControls = nullptr;
    const clap_plugin_audio_ports *_pluginAudioPorts = nullptr;
    const clap_plugin_gui *_pluginGui = nullptr;
    const clap_plugin_timer_support *_pluginTimerSupport = nullptr;
@@ -269,9 +271,9 @@ private:
 
    std::unordered_map<clap_id, bool> _isAdjustingParameter;
 
-   std::vector<std::unique_ptr<clap_quick_controls_page>> _quickControlsPages;
-   std::unordered_map<clap_id, clap_quick_controls_page *> _quickControlsPagesIndex;
-   clap_id _quickControlsSelectedPage = CLAP_INVALID_ID;
+   std::vector<std::unique_ptr<clap_remote_controls_page>> _remoteControlsPages;
+   std::unordered_map<clap_id, clap_remote_controls_page *> _remoteControlsPagesIndex;
+   clap_id _remoteControlsSelectedPage = CLAP_INVALID_ID;
 
    /* delayed actions */
    enum PluginState {

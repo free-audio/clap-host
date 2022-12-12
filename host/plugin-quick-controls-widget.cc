@@ -16,8 +16,8 @@ PluginQuickControlsWidget::PluginQuickControlsWidget(QWidget *parent, PluginHost
    auto grid = new QGridLayout();
    grid->setSpacing(3);
 
-   const auto rowSize = CLAP_QUICK_CONTROLS_COUNT / 2;
-   for (int i = 0; i < CLAP_QUICK_CONTROLS_COUNT; ++i)
+   const auto rowSize = CLAP_REMOTE_CONTROLS_COUNT / 2;
+   for (int i = 0; i < CLAP_REMOTE_CONTROLS_COUNT; ++i)
       grid->addWidget(_controls[i], i / rowSize, i % rowSize);
 
    auto vbox = new QVBoxLayout();
@@ -41,21 +41,21 @@ PluginQuickControlsWidget::PluginQuickControlsWidget(QWidget *parent, PluginHost
 }
 
 void PluginQuickControlsWidget::pagesChanged() {
-   auto &pages = _pluginHost.quickControlsPages();
+   auto &pages = _pluginHost.remoteControlsPages();
    _chooser->clear();
    for (auto &it : pages)
-      _chooser->addItem(it->name, it->id);
+      _chooser->addItem(it->page_name, it->page_id);
 
    selectedPageChanged();
 }
 
 void PluginQuickControlsWidget::selectedPageChanged() {
-   auto pageId = _pluginHost.quickControlsSelectedPage();
-   auto &pagesIndex = _pluginHost.quickControlsPagesIndex();
+   auto pageId = _pluginHost.remoteControlsSelectedPage();
+   auto &pagesIndex = _pluginHost.remoteControlsPagesIndex();
    auto &params = _pluginHost.params();
    auto it = pagesIndex.find(pageId);
 
-   for (int i = 0; i < CLAP_QUICK_CONTROLS_COUNT; ++i) {
+   for (int i = 0; i < CLAP_REMOTE_CONTROLS_COUNT; ++i) {
       PluginParam *param = nullptr;
 
       if (it != pagesIndex.end()) {
@@ -71,6 +71,6 @@ void PluginQuickControlsWidget::selectedPageChanged() {
 
 void PluginQuickControlsWidget::selectPageFromChooser(int index) {
    clap_id pageId = _chooser->itemData(index).toUInt();
-   _pluginHost.setQuickControlsSelectedPageByHost(pageId);
+   _pluginHost.setRemoteControlsSelectedPageByHost(pageId);
    selectedPageChanged();
 }

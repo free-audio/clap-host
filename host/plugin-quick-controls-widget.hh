@@ -25,5 +25,5 @@ private:
    PluginHost &_pluginHost;
 
    QComboBox *_chooser = nullptr;
-   std::array<PluginQuickControlWidget *, CLAP_QUICK_CONTROLS_COUNT> _controls;
+   std::array<PluginQuickControlWidget *, CLAP_REMOTE_CONTROLS_COUNT> _controls;
 };

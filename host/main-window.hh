@@ -47,5 +47,5 @@ private:
    QWidget *_pluginViewWidget = nullptr;
 
    PluginParametersWidget *_pluginParametersWidget = nullptr;
-   PluginQuickControlsWidget *_pluginQuickControlsWidget = nullptr;
+   PluginQuickControlsWidget *_pluginRemoteControlsWidget = nullptr;
 };
