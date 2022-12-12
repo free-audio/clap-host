@@ -44,37 +44,19 @@ jobs:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
 
     steps:
-      - name: 'Remove old VCPKG'
-        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
-        shell: 'bash'
-        run: sudo rm -rf "$VCPKG_INSTALLATION_ROOT"
-
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
 
       - uses: seanmiddleditch/gha-setup-ninja@master
+        if: startsWith(matrix.os, 'win')
 
       - uses: lukka/get-cmake@latest
-
-      - name: 'Bootstrap VCPKG'
-        shell: bash
-        run: vcpkg/bootstrap-vcpkg.sh
-
-      - name: 'Setup NuGet Credentials'
-        shell: 'bash'
-        run: >
-          ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1`
-          sources add
-          -source "https://nuget.pkg.github.com/free-audio/index.json"
-          -storepasswordincleartext
-          -name "GitHub"
-          -username "free-audio"
-          -password "${{ secrets.GITHUB_TOKEN }}"
+        if: startsWith(matrix.os, 'win')
 
       - name: Setup MacOS
         if: startsWith(matrix.os, 'macOS')
-        run: brew install automake autoconf ninja cmake
+        run: brew upgrade && brew install automake autoconf ninja cmake nuget || true
 
       - name: Setup Ubuntu
         if: startsWith(matrix.os, 'ubuntu')
@@ -112,6 +94,34 @@ jobs:
           libxkbcommon-x11-dev
           libxrender-dev
           libatspi2.0-dev
+          nuget
+
+      - name: 'Bootstrap VCPKG'
+        shell: bash
+        run: vcpkg/bootstrap-vcpkg.sh
+
+      - name: 'Setup NuGet Credentials (windows)'
+        if: startsWith(matrix.os, 'win')
+        shell: 'bash'
+        run: >
+          ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1`
+          sources add
+          -source "https://nuget.pkg.github.com/free-audio/index.json"
+          -storepasswordincleartext
+          -name "GitHub"
+          -username "free-audio"
+          -password "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: 'Setup NuGet Credentials (unix)'
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
+        shell: 'bash'
+        run: >
+          nuget sources add
+          -source "https://nuget.pkg.github.com/free-audio/index.json"
+          -storepasswordincleartext
+          -name "GitHub"
+          -username "free-audio"
+          -password "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Build
         shell: bash
@@ -126,3 +136,7 @@ jobs:
         with:
           name: clap-host-${{ matrix.artifact }}.tar.xz
           path: clap-host.tar.xz
+
+      - uses: actions/delete-package-versions@v3
+        with:
+          package-name: qtbase_${{ matrix.triplet }}-clap-host

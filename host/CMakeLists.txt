@@ -33,12 +33,16 @@ add_executable(clap-host
   plugin-info.hh
   plugin-parameters-widget.cc
   plugin-parameters-widget.hh
+  plugin-host-settings.cc
+  plugin-host-settings.hh
   settings.cc
   settings-dialog.cc
   settings-dialog.hh
   settings.hh
   settings-widget.cc
   settings-widget.hh
+  tweaks-dialog.cc
+  tweaks-dialog.hh
 
   precompiled-header.hh
   )

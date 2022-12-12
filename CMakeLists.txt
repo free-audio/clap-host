@@ -14,7 +14,9 @@ set(CLAP_HOST_BUNDLE FALSE CACHE BOOL "Produce a macOS bundle")
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+#find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt6Core CONFIG REQUIRED)
+find_package(Qt6Widgets CONFIG REQUIRED)
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang|Clang|GNU")
   add_compile_options(-fvisibility=hidden -fvisibility-inlines-hidden
@@ -40,6 +42,12 @@ endif()
 
 add_subdirectory(host)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  install(FILES resources/linux/org.cleveraudio.clap-host.desktop DESTINATION share/applications)
+  install(FILES resources/linux/org.cleveraudio.clap-host.appdata.xml DESTINATION share/metainfo)
+  install(FILES "clap/artwork/CLAP Full Logo.svg" DESTINATION share/icons/hicolor/scalable/apps RENAME org.cleveraudio.clap-host.svg)
+endif()
+
 ###########
 ## CPACK ##
 ###########
@@ -50,7 +58,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "CLAP Reference Host")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/free-audio/clap-host")
 set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "0")
-set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_VERSION_PATCH "1")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "clap-host")
 set(CPACK_NSIS_MANIFEST_DPI_AWARE TRUE)
 

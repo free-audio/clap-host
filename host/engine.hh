@@ -10,7 +10,7 @@
 #include <QWidget>
 
 #include <RtAudio.h>
-#include <RtMidi.h>
+#include <rtmidi/RtMidi.h>
 
 class Application;
 class Settings;
@@ -50,6 +50,8 @@ public:
 
 public:
    void callPluginIdle();
+
+   volatile uint32_t keyboardNoteData[8];
 
 private:
    friend class AudioPlugin;

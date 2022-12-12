@@ -21,6 +21,7 @@
 #include "plugin-param.hh"
 
 class Engine;
+class PluginHostSettings;
 class PluginHost final : public QObject {
    Q_OBJECT;
 
@@ -138,14 +139,17 @@ private:
 
    static void clapStateMarkDirty(const clap_host *host);
 
+   bool canUsePluginParams() const noexcept;
    bool canUsePluginGui() const noexcept;
    static const char *getCurrentClapGuiApi();
 
    void paramFlushOnMainThread();
    void handlePluginOutputEvents();
+   void generatePluginInputEvents();
 
 private:
    Engine &_engine;
+   PluginHostSettings &_settings;
 
    QLibrary _library;
 

@@ -5,7 +5,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
-#include <RtMidi.h>
+#include <rtmidi/RtMidi.h>
 
 #include "application.hh"
 #include "engine.hh"

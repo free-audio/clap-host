@@ -1,4 +1,4 @@
-﻿#include <exception>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -11,7 +11,9 @@
 #include "application.hh"
 #include "engine.hh"
 #include "main-window.hh"
+#include "plugin-host-settings.hh"
 #include "plugin-host.hh"
+#include "settings.hh"
 
 #include <clap/helpers/reducing-param-queue.hxx>
 
@@ -24,7 +26,8 @@ enum class ThreadType {
 
 thread_local ThreadType g_thread_type = ThreadType::Unknown;
 
-PluginHost::PluginHost(Engine &engine) : QObject(&engine), _engine(engine) {
+PluginHost::PluginHost(Engine &engine)
+   : QObject(&engine), _engine(engine), _settings(engine._settings.pluginHostSettings()) {
    g_thread_type = ThreadType::MainThread;
 
    host_.host_data = this;
@@ -134,7 +137,11 @@ bool PluginHost::load(const QString &path, int pluginIndex) {
       qWarning() << "could not create the plugin with id: " << desc->id;
       return false;
    }
-   _plugin->init(_plugin);
+
+   if (!_plugin->init(_plugin)) {
+      qWarning() << "could not init the plugin with id: " << desc->id;
+      return false;
+   }
 
    initPluginExtensions();
    scanParams();
@@ -175,8 +182,10 @@ void PluginHost::unload() {
 
    deactivate();
 
-   _plugin->destroy(_plugin);
-   _plugin = nullptr;
+   if (_plugin) {
+      _plugin->destroy(_plugin);
+      _plugin = nullptr;
+   }
    _pluginGui = nullptr;
    _pluginTimerSupport = nullptr;
    _pluginPosixFdSupport = nullptr;
@@ -272,7 +281,7 @@ static clap_window makeClapWindow(WId window) {
    w.api = CLAP_WINDOW_API_COCOA;
    w.cocoa = reinterpret_cast<clap_nsview>(window);
 #elif defined(Q_OS_WIN)
-   w.api = CLAP_WINDOW_API_COCOA;
+   w.api = CLAP_WINDOW_API_WIN32;
    w.win32 = reinterpret_cast<clap_hwnd>(window);
 #endif
 
@@ -664,6 +673,7 @@ void PluginHost::processNoteOn(int sampleOffset, int channel, int key, int veloc
    ev.port_index = 0;
    ev.key = key;
    ev.channel = channel;
+   ev.note_id = -1;
    ev.velocity = velocity / 127.0;
 
    _evIn.push(&ev.header);
@@ -681,6 +691,7 @@ void PluginHost::processNoteOff(int sampleOffset, int channel, int key, int velo
    ev.port_index = 0;
    ev.key = key;
    ev.channel = channel;
+   ev.note_id = -1;
    ev.velocity = velocity / 127.0;
 
    _evIn.push(&ev.header);
@@ -718,6 +729,9 @@ void PluginHost::processCC(int sampleOffset, int channel, int cc, int value) {
 void PluginHost::process() {
    checkForAudioThread();
 
+   if (!_plugin)
+      return;
+
    // Can't process a plugin that is not active
    if (!isPluginActive())
       return;
@@ -746,38 +760,7 @@ void PluginHost::process() {
    _process.audio_outputs_count = 1;
 
    _evOut.clear();
-   _appToEngineValueQueue.consume(
-      [this](clap_id param_id, const AppToEngineParamQueueValue &value) {
-         clap_event_param_value ev;
-         ev.header.time = 0;
-         ev.header.type = CLAP_EVENT_PARAM_VALUE;
-         ev.header.space_id = CLAP_CORE_EVENT_SPACE_ID;
-         ev.header.flags = 0;
-         ev.header.size = sizeof(ev);
-         ev.param_id = param_id;
-         ev.cookie = value.cookie;
-         ev.port_index = 0;
-         ev.key = -1;
-         ev.channel = -1;
-         ev.value = value.value;
-         _evIn.push(&ev.header);
-      });
-
-   _appToEngineModQueue.consume([this](clap_id param_id, const AppToEngineParamQueueValue &value) {
-      clap_event_param_mod ev;
-      ev.header.time = 0;
-      ev.header.type = CLAP_EVENT_PARAM_MOD;
-      ev.header.space_id = CLAP_CORE_EVENT_SPACE_ID;
-      ev.header.flags = 0;
-      ev.header.size = sizeof(ev);
-      ev.param_id = param_id;
-      ev.cookie = value.cookie;
-      ev.port_index = 0;
-      ev.key = -1;
-      ev.channel = -1;
-      ev.amount = value.value;
-      _evIn.push(&ev.header);
-   });
+   generatePluginInputEvents();
 
    if (isPluginSleeping()) {
       if (!_scheduleProcess && _evIn.empty())
@@ -796,7 +779,7 @@ void PluginHost::process() {
    }
 
    int32_t status = CLAP_PROCESS_SLEEP;
-   if (_plugin && _plugin->process && isPluginProcessing())
+   if (isPluginProcessing())
       status = _plugin->process(_plugin, &_process);
 
    handlePluginOutputEvents();
@@ -809,6 +792,43 @@ void PluginHost::process() {
    // TODO: send plugin to sleep if possible
 
    g_thread_type = ThreadType::Unknown;
+}
+
+void PluginHost::generatePluginInputEvents() {
+   _appToEngineValueQueue.consume(
+      [this](clap_id param_id, const AppToEngineParamQueueValue &value) {
+         clap_event_param_value ev;
+         ev.header.time = 0;
+         ev.header.type = CLAP_EVENT_PARAM_VALUE;
+         ev.header.space_id = CLAP_CORE_EVENT_SPACE_ID;
+         ev.header.flags = 0;
+         ev.header.size = sizeof(ev);
+         ev.param_id = param_id;
+         ev.cookie = _settings.shouldProvideCookie() ? value.cookie : nullptr;
+         ev.port_index = 0;
+         ev.key = -1;
+         ev.channel = -1;
+         ev.note_id = -1;
+         ev.value = value.value;
+         _evIn.push(&ev.header);
+      });
+
+   _appToEngineModQueue.consume([this](clap_id param_id, const AppToEngineParamQueueValue &value) {
+      clap_event_param_mod ev;
+      ev.header.time = 0;
+      ev.header.type = CLAP_EVENT_PARAM_MOD;
+      ev.header.space_id = CLAP_CORE_EVENT_SPACE_ID;
+      ev.header.flags = 0;
+      ev.header.size = sizeof(ev);
+      ev.param_id = param_id;
+      ev.cookie = _settings.shouldProvideCookie() ? value.cookie : nullptr;
+      ev.port_index = 0;
+      ev.key = -1;
+      ev.channel = -1;
+      ev.note_id = -1;
+      ev.amount = value.value;
+      _evIn.push(&ev.header);
+   });
 }
 
 void PluginHost::handlePluginOutputEvents() {
@@ -866,10 +886,14 @@ void PluginHost::paramFlushOnMainThread() {
    _evIn.clear();
    _evOut.clear();
 
-   _pluginParams->flush(_plugin, _evIn.clapInputEvents(), _evOut.clapOutputEvents());
+   generatePluginInputEvents();
+
+   if (canUsePluginParams())
+      _pluginParams->flush(_plugin, _evIn.clapInputEvents(), _evOut.clapOutputEvents());
    handlePluginOutputEvents();
 
    _evOut.clear();
+   _engineToAppValueQueue.producerDone();
 }
 
 void PluginHost::idle() {
@@ -956,6 +980,7 @@ void PluginHost::setParamValueByHost(PluginParam &param, double value) {
 
    _appToEngineValueQueue.set(param.info().id, {param.info().cookie, value});
    _appToEngineValueQueue.producerDone();
+   clapParamsRequestFlush(&host_);
 }
 
 void PluginHost::setParamModulationByHost(PluginParam &param, double value) {
@@ -965,6 +990,7 @@ void PluginHost::setParamModulationByHost(PluginParam &param, double value) {
 
    _appToEngineModQueue.set(param.info().id, {param.info().cookie, value});
    _appToEngineModQueue.producerDone();
+   clapParamsRequestFlush(&host_);
 }
 
 void PluginHost::scanParams() { clapParamsRescan(&host_, CLAP_PARAM_RESCAN_ALL); }
@@ -972,6 +998,9 @@ void PluginHost::scanParams() { clapParamsRescan(&host_, CLAP_PARAM_RESCAN_ALL);
 void PluginHost::clapParamsRescan(const clap_host *host, uint32_t flags) {
    checkForMainThread();
    auto h = fromHost(host);
+
+   if (!h->canUsePluginParams())
+      return;
 
    // 1. it is forbidden to use CLAP_PARAM_RESCAN_ALL if the plugin is active
    if (h->isPluginActive() && (flags & CLAP_PARAM_RESCAN_ALL)) {
@@ -1111,6 +1140,10 @@ void PluginHost::clapParamsRequestFlush(const clap_host *host) {
 
 double PluginHost::getParamValue(const clap_param_info &info) {
    checkForMainThread();
+
+   if (!canUsePluginParams())
+      return 0;
+
    double value;
    if (_pluginParams->get_value(_plugin, info.id, &value))
       return value;
@@ -1297,10 +1330,19 @@ bool PluginHost::isPluginSleeping() const { return _state == ActiveAndSleeping; 
 QString PluginHost::paramValueToText(clap_id paramId, double value) {
    std::array<char, 256> buffer;
 
+   if (!canUsePluginParams())
+      return "-";
+
    if (_pluginParams->value_to_text(_plugin, paramId, value, buffer.data(), buffer.size()))
       return buffer.data();
 
    return QString::number(value);
+}
+
+bool PluginHost::canUsePluginParams() const noexcept {
+   return _pluginParams && _pluginParams->count && _pluginParams->flush &&
+          _pluginParams->get_info && _pluginParams->get_value && _pluginParams->text_to_value &&
+          _pluginParams->value_to_text;
 }
 
 bool PluginHost::canUsePluginGui() const noexcept {

@@ -18,6 +18,7 @@
 #include "plugin-quick-controls-widget.hh"
 #include "settings-dialog.hh"
 #include "settings.hh"
+#include "tweaks-dialog.hh"
 
 MainWindow::MainWindow(Application &app)
    : super(nullptr), _application(app), _pluginViewWindow(new QWindow()),
@@ -68,6 +69,11 @@ void MainWindow::createMenu() {
            &QAction::triggered,
            this,
            &MainWindow::showPluginQuickControlsWindow);
+   menuBar->addSeparator();
+   connect(windowsMenu->addAction(tr("Tweaks...")), &QAction::triggered, [this] {
+      TweaksDialog dialog(_application.settings(), this);
+      dialog.exec();
+   });
    menuBar->addSeparator();
    connect(windowsMenu->addAction(tr("Toggle Plugin Window Visibility")),
            &QAction::triggered,
@@ -131,6 +137,34 @@ void MainWindow::recreatePluginWindow() {
 void MainWindow::showAboutDialog() {
    AboutDialog dialog(this);
    dialog.exec();
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+   Engine *engine = _application.engine();
+
+   for (int i = 0; i < 8; i++) {
+#ifdef _WIN32
+      if (0 == InterlockedCompareExchange((LONG volatile *) &engine->keyboardNoteData[i], event->key(), 0)) {
+#else
+      if (0 == __sync_val_compare_and_swap(&engine->keyboardNoteData[i], 0, event->key())) {
+#endif
+         break;
+      }
+   }
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event) {
+   Engine *engine = _application.engine();
+
+   for (int i = 0; i < 8; i++) {
+#ifdef _WIN32
+      if (0 == InterlockedCompareExchange((LONG volatile *) &engine->keyboardNoteData[i], event->key(), 0)) {
+#else
+      if (0 == __sync_val_compare_and_swap(&engine->keyboardNoteData[i], 0, 0x8000 | event->key())) {
+#endif
+         break;
+      }
+   }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
