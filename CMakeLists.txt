@@ -11,6 +11,7 @@ project(CLAP_EXAMPLES C CXX)
 
 set(UsePkgConfig TRUE CACHE BOOL "Use PkgConfig to find RtMidi and RtAudio dependencies")
 set(CLAP_HOST_BUNDLE FALSE CACHE BOOL "Produce a macOS bundle")
+set(CLAP_HOST_BINARY clap-host CACHE STRING "File name of the resulting binary")
 
 set(CMAKE_AUTOMOC ON)
 
@@ -43,7 +44,8 @@ endif()
 add_subdirectory(host)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  install(FILES resources/linux/org.cleveraudio.clap-host.desktop DESTINATION share/applications)
+  configure_file(resources/linux/org.cleveraudio.clap-host.desktop.in resources/linux/org.cleveraudio.clap-host.desktop)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/resources/linux/org.cleveraudio.clap-host.desktop DESTINATION share/applications)
   install(FILES resources/linux/org.cleveraudio.clap-host.appdata.xml DESTINATION share/metainfo)
   install(FILES "clap/artwork/CLAP Full Logo.svg" DESTINATION share/icons/hicolor/scalable/apps RENAME org.cleveraudio.clap-host.svg)
 endif()
