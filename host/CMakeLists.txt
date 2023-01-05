@@ -81,4 +81,8 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   target_link_options(clap-host PRIVATE -exported_symbols_list ${CMAKE_CURRENT_SOURCE_DIR}/macos-symbols.txt)
 endif()
 
+if(NOT ${CLAP_HOST_BINARY} STREQUAL clap-host)
+  set_target_properties(clap-host PROPERTIES OUTPUT_NAME ${CLAP_HOST_BINARY})
+endif()
+
 install(TARGETS clap-host DESTINATION "bin" COMPONENT host)
