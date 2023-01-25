@@ -1278,7 +1278,11 @@ bool PluginHost::loadNativePluginPreset(const std::string &path) {
    if (!_pluginPresetLoad->from_uri)
       throw std::logic_error("clap_plugin_preset_load does not implement load_from_uri");
 
-   return _pluginPresetLoad->from_uri(_plugin, path.c_str(), "");
+   std::ostringstream os("file://");
+   os << path;
+   std::string uri = os.str();
+
+   return _pluginPresetLoad->from_uri(_plugin, uri.c_str(), "");
 }
 
 void PluginHost::clapStateMarkDirty(const clap_host *host) {
