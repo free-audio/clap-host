@@ -1269,7 +1269,7 @@ void PluginHost::clapRemoteControlsSuggestPage(const clap_host *host, clap_id pa
    // TODO
 }
 
-bool PluginHost::loadNativePluginPreset(const std::string &path) {
+bool PluginHost::loadNativePluginPreset(const std::string &uri) {
    checkForMainThread();
 
    if (!_pluginPresetLoad)
@@ -1277,10 +1277,6 @@ bool PluginHost::loadNativePluginPreset(const std::string &path) {
 
    if (!_pluginPresetLoad->from_uri)
       throw std::logic_error("clap_plugin_preset_load does not implement load_from_uri");
-
-   std::ostringstream os("file://");
-   os << path;
-   std::string uri = os.str();
 
    return _pluginPresetLoad->from_uri(_plugin, uri.c_str(), "");
 }

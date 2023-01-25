@@ -8,6 +8,7 @@
 #include <QMenuBar>
 #include <QToolBar>
 #include <QWindow>
+#include <QUrl>
 
 #include "about-dialog.hh"
 #include "application.hh"
@@ -121,7 +122,8 @@ void MainWindow::loadNativePluginPreset() {
    if (file.isEmpty())
       return;
 
-   _application.engine()->pluginHost().loadNativePluginPreset(file.toStdString());
+   const auto url = QUrl::fromLocalFile(file);
+   _application.engine()->pluginHost().loadNativePluginPreset(url.toString().toStdString());
 }
 
 void MainWindow::togglePluginWindowVisibility() {

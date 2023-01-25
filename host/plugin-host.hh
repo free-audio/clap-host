@@ -67,7 +67,7 @@ public:
    auto remoteControlsSelectedPage() const { return _remoteControlsSelectedPage; }
    void setRemoteControlsSelectedPageByHost(clap_id page_id);
 
-   bool loadNativePluginPreset(const std::string &path);
+   bool loadNativePluginPreset(const std::string &uri);
    bool loadStateFromFile(const std::string &path);
    bool saveStateToFile(const std::string &path);
 
