@@ -74,8 +74,8 @@ Reference: https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-pa
 
 Install **Visual Studio 2022**; you can install it from the **Microsoft Store**. It can also install **git** and **CMake** for you.
 
-Use the following command inside `Developer PowerShell For VS 2022`:
-```powershell
+Use the following command inside `git-bash`:
+```bash
 # Checkout the code very close to the root to avoid windows long path issues...
 cd c:\
 git clone --recurse-submodules https://github.com/free-audio/clap-host c-h
