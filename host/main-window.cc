@@ -122,8 +122,7 @@ void MainWindow::loadNativePluginPreset() {
    if (file.isEmpty())
       return;
 
-   const auto url = QUrl::fromLocalFile(file);
-   _application.engine()->pluginHost().loadNativePluginPreset(url.toString().toStdString());
+   _application.engine()->pluginHost().loadNativePluginPreset(file.toStdString());
 }
 
 void MainWindow::togglePluginWindowVisibility() {
