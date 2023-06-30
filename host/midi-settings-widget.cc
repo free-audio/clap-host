@@ -26,7 +26,7 @@ MidiSettingsWidget::MidiSettingsWidget(MidiSettings &midiSettings, QWidget *pare
 
    QGroupBox *groupBox = new QGroupBox(this);
    groupBox->setLayout(layout);
-   groupBox->setTitle(tr("Audio"));
+   groupBox->setTitle(tr("MIDI"));
 
    QLayout *groupLayout = new QVBoxLayout();
    groupLayout->addWidget(groupBox);
