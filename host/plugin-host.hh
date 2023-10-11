@@ -16,13 +16,14 @@
 #include <clap/clap.h>
 #include <clap/helpers/event-list.hh>
 #include <clap/helpers/reducing-param-queue.hh>
+#include <clap/helpers/host.hh>
 
 #include "engine.hh"
 #include "plugin-param.hh"
 
 class Engine;
 class PluginHostSettings;
-class PluginHost final : public QObject {
+class PluginHost final : public clap::helpers::Host, public QObject {
    Q_OBJECT;
 
 public:
@@ -82,25 +83,68 @@ signals:
    void quickControlsSelectedPageChanged();
    void paramAdjusted(clap_id paramId);
 
+protected:
+   /////////////////////////
+   // clap::helpers::Host //
+   /////////////////////////
+
+   // clap_host
+   virtual void requestRestart() noexcept override;
+   virtual void requestProcess() noexcept override;
+   virtual void requestCallback() noexcept override;
+
+   // clap_host_gui
+   virtual bool implementsGui() const noexcept override { return true; }
+   virtual void guiResizeHintsChanged() noexcept override;
+   virtual bool guiRequestResize(uint32_t width, uint32_t height) noexcept override;
+   virtual bool guiRequestShow() noexcept override;
+   virtual bool guiRequestHide() noexcept override;
+   virtual void guiClosed(bool wasDestroyed) noexcept override;
+
+   // clap_host_log
+   virtual bool implementsLog() const noexcept override { return true; }
+   virtual void logLog(clap_log_severity severity, const char *message) const noexcept override;
+
+   // clap_host_params
+   virtual bool implementsParams() const noexcept override { return true; }
+   virtual void paramsRescan(clap_param_rescan_flags flags) noexcept override;
+   virtual void paramsClear(clap_id paramId, clap_param_clear_flags flags) noexcept override;
+   virtual void paramsRequestFlush() noexcept;
+
+   // clap_host_posix_fd_support
+   virtual bool implementsPosixFdSupport() const noexcept override { return true; }
+   virtual bool posixFdSupportRegisterFd(int fd, clap_posix_fd_flags_t flags) noexcept override;
+   virtual bool posixFdSupportModifyFd(int fd, clap_posix_fd_flags_t flags) noexcept override;
+   virtual bool posixFdSupportUnregisterFd(int fd) noexcept override;
+
+   // clap_host_remote_controls
+   virtual bool implementsRemoteControls() const noexcept override { return true; }
+   virtual void remoteControlsChanged() noexcept override;
+   virtual void remoteControlsSuggestPage(clap_id pageId) noexcept override {}
+
+   // clap_host_state
+   virtual bool implementsState() const noexcept override { return true; }
+   virtual void stateMarkDirty() noexcept override;
+
+   // clap_host_timer_support
+   virtual bool implementsTimerSupport() const noexcept override { return true; }
+   virtual bool timerSupportRegisterTimer(uint32_t periodMs, clap_id *timerId) noexcept override;
+   virtual bool timerSupportUnregisterTimer(clap_id timerId) noexcept override;
+
+   // clap_host_thread_check
+   virtual bool implementsThreadCheck() const noexcept override { return true; }
+   virtual bool threadCheckIsMainThread() noexcept override;
+   virtual bool threadCheckIsAudioThread() noexcept override;
+
+   // clap_host_thread_pool
+   virtual bool implementsThreadPool() const noexcept override { return true; }
+   virtual bool threadPoolRequestExec(uint32_t numTasks) noexcept override;
+
 private:
-   static PluginHost *fromHost(const clap_host *host);
    template <typename T>
    void initPluginExtension(const T *&ext, const char *id);
 
    /* clap host callbacks */
-   static void clapLog(const clap_host *host, clap_log_severity severity, const char *msg);
-
-   static void clapRequestCallback(const clap_host *host);
-   static void clapRequestRestart(const clap_host *host);
-   static void clapRequestProcess(const clap_host *host);
-
-   static bool clapIsMainThread(const clap_host *host);
-   static bool clapIsAudioThread(const clap_host *host);
-
-   static void clapParamsRescan(const clap_host *host, clap_param_rescan_flags flags);
-   static void
-   clapParamsClear(const clap_host *host, clap_id param_id, clap_param_clear_flags flags);
-   static void clapParamsRequestFlush(const clap_host *host);
    void scanParams();
    void scanParam(int32_t index);
    PluginParam &checkValidParamId(const std::string_view &function,
@@ -117,28 +161,8 @@ private:
 
    void scanQuickControls();
    void quickControlsSetSelectedPage(clap_id pageId);
-   static void clapRemoteControlsChanged(const clap_host *host);
-   static void clapRemoteControlsSuggestPage(const clap_host *host, clap_id page_id);
 
-   static bool clapRegisterTimer(const clap_host *host, uint32_t period_ms, clap_id *timer_id);
-   static bool clapUnregisterTimer(const clap_host *host, clap_id timer_id);
-   static bool clapRegisterPosixFd(const clap_host *host, int fd, clap_posix_fd_flags_t flags);
-   static bool clapModifyPosixFd(const clap_host *host, int fd, clap_posix_fd_flags_t flags);
-   static bool clapUnregisterPosixFd(const clap_host *host, int fd);
    void eventLoopSetFdNotifierFlags(int fd, int flags);
-
-   static bool clapThreadPoolRequestExec(const clap_host *host, uint32_t num_tasks);
-
-   static const void *clapExtension(const clap_host *host, const char *extension);
-
-   /* clap host gui callbacks */
-   static void clapGuiResizeHintsChanged(const clap_host_t *host);
-   static bool clapGuiRequestResize(const clap_host *host, uint32_t width, uint32_t height);
-   static bool clapGuiRequestShow(const clap_host *host);
-   static bool clapGuiRequestHide(const clap_host *host);
-   static void clapGuiClosed(const clap_host *host, bool wasDestroyed);
-
-   static void clapStateMarkDirty(const clap_host *host);
 
    bool canUsePluginParams() const noexcept;
    bool canUsePluginGui() const noexcept;
@@ -153,50 +177,6 @@ private:
    PluginHostSettings &_settings;
 
    QLibrary _library;
-
-   clap_host host_;
-   static constexpr clap_host_log _hostLog = {
-      PluginHost::clapLog,
-   };
-   static constexpr clap_host_gui _hostGui = {
-      PluginHost::clapGuiResizeHintsChanged,
-      PluginHost::clapGuiRequestResize,
-      PluginHost::clapGuiRequestShow,
-      PluginHost::clapGuiRequestHide,
-      PluginHost::clapGuiClosed,
-   };
-
-   // static constexpr clap_host_audio_ports hostAudioPorts_;
-   // static constexpr clap_host_audio_ports_config hostAudioPortsConfig_;
-   static constexpr clap_host_params _hostParams = {
-      PluginHost::clapParamsRescan,
-      PluginHost::clapParamsClear,
-      PluginHost::clapParamsRequestFlush,
-   };
-   static constexpr clap_host_remote_controls _hostRemoteControls = {
-      PluginHost::clapRemoteControlsChanged,
-      PluginHost::clapRemoteControlsSuggestPage,
-   };
-   static constexpr clap_host_timer_support _hostTimerSupport = {
-      PluginHost::clapRegisterTimer,
-      PluginHost::clapUnregisterTimer,
-   };
-   static constexpr clap_host_posix_fd_support _hostPosixFdSupport = {
-      PluginHost::clapRegisterPosixFd,
-      PluginHost::clapModifyPosixFd,
-      PluginHost::clapUnregisterPosixFd,
-   };
-
-   static constexpr clap_host_thread_check _hostThreadCheck = {
-      PluginHost::clapIsMainThread,
-      PluginHost::clapIsAudioThread,
-   };
-   static constexpr clap_host_thread_pool _hostThreadPool = {
-      PluginHost::clapThreadPoolRequestExec,
-   };
-   static constexpr clap_host_state _hostState = {
-      PluginHost::clapStateMarkDirty,
-   };
 
    const clap_plugin_entry *_pluginEntry = nullptr;
    const clap_plugin_factory *_pluginFactory = nullptr;
