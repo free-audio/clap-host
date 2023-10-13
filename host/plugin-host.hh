@@ -155,10 +155,10 @@ private:
    QLibrary _library;
 
    clap_host host_;
-   static const constexpr clap_host_log _hostLog = {
+   static constexpr clap_host_log _hostLog = {
       PluginHost::clapLog,
    };
-   static const constexpr clap_host_gui _hostGui = {
+   static constexpr clap_host_gui _hostGui = {
       PluginHost::clapGuiResizeHintsChanged,
       PluginHost::clapGuiRequestResize,
       PluginHost::clapGuiRequestShow,
@@ -166,35 +166,35 @@ private:
       PluginHost::clapGuiClosed,
    };
 
-   // static const constexpr clap_host_audio_ports hostAudioPorts_;
-   // static const constexpr clap_host_audio_ports_config hostAudioPortsConfig_;
-   static const constexpr clap_host_params _hostParams = {
+   // static constexpr clap_host_audio_ports hostAudioPorts_;
+   // static constexpr clap_host_audio_ports_config hostAudioPortsConfig_;
+   static constexpr clap_host_params _hostParams = {
       PluginHost::clapParamsRescan,
       PluginHost::clapParamsClear,
       PluginHost::clapParamsRequestFlush,
    };
-   static const constexpr clap_host_remote_controls _hostRemoteControls = {
+   static constexpr clap_host_remote_controls _hostRemoteControls = {
       PluginHost::clapRemoteControlsChanged,
       PluginHost::clapRemoteControlsSuggestPage,
    };
-   static const constexpr clap_host_timer_support _hostTimerSupport = {
+   static constexpr clap_host_timer_support _hostTimerSupport = {
       PluginHost::clapRegisterTimer,
       PluginHost::clapUnregisterTimer,
    };
-   static const constexpr clap_host_posix_fd_support _hostPosixFdSupport = {
+   static constexpr clap_host_posix_fd_support _hostPosixFdSupport = {
       PluginHost::clapRegisterPosixFd,
       PluginHost::clapModifyPosixFd,
       PluginHost::clapUnregisterPosixFd,
    };
 
-   static const constexpr clap_host_thread_check _hostThreadCheck = {
+   static constexpr clap_host_thread_check _hostThreadCheck = {
       PluginHost::clapIsMainThread,
       PluginHost::clapIsAudioThread,
    };
-   static const constexpr clap_host_thread_pool _hostThreadPool = {
+   static constexpr clap_host_thread_pool _hostThreadPool = {
       PluginHost::clapThreadPoolRequestExec,
    };
-   static const constexpr clap_host_state _hostState = {
+   static constexpr clap_host_state _hostState = {
       PluginHost::clapStateMarkDirty,
    };
 
