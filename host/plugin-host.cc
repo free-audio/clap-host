@@ -16,6 +16,7 @@
 #include "settings.hh"
 
 #include <clap/helpers/host.hxx>
+#include <clap/helpers/plugin-proxy.hxx>
 #include <clap/helpers/reducing-param-queue.hxx>
 
 enum class ThreadType {
@@ -28,6 +29,8 @@ enum class ThreadType {
 thread_local ThreadType g_thread_type = ThreadType::Unknown;
 
 template class clap::helpers::Host<PluginHost_MH, PluginHost_CL>;
+
+template class clap::helpers::PluginProxy<PluginHost_MH, PluginHost_CL>;
 
 PluginHost::PluginHost(Engine &engine)
    : QObject(&engine), _engine(engine), _settings(engine._settings.pluginHostSettings()),
@@ -78,7 +81,7 @@ void PluginHost::threadPoolEntry() {
          return;
 
       int taskIndex = _threadPoolTaskIndex++;
-      _pluginThreadPool->exec(_plugin, taskIndex);
+      _plugin->threadPoolExec(taskIndex);
       _threadPoolSemaphoreDone.release();
    }
 }
@@ -129,40 +132,22 @@ bool PluginHost::load(const QString &path, int pluginIndex) {
       return false;
    }
 
-   _plugin = _pluginFactory->create_plugin(_pluginFactory, clapHost(), desc->id);
-   if (!_plugin) {
+   const auto plugin = _pluginFactory->create_plugin(_pluginFactory, clapHost(), desc->id);
+   if (!plugin) {
       qWarning() << "could not create the plugin with id: " << desc->id;
       return false;
    }
 
-   if (!_plugin->init(_plugin)) {
+   _plugin = std::make_unique<PluginProxy>(*plugin);
+
+   if (!_plugin->init()) {
       qWarning() << "could not init the plugin with id: " << desc->id;
       return false;
    }
 
-   initPluginExtensions();
    scanParams();
    scanQuickControls();
    return true;
-}
-
-void PluginHost::initPluginExtensions() {
-   checkForMainThread();
-
-   if (_pluginExtensionsAreInitialized)
-      return;
-
-   initPluginExtension(_pluginParams, CLAP_EXT_PARAMS);
-   initPluginExtension(_pluginRemoteControls, CLAP_EXT_REMOTE_CONTROLS);
-   initPluginExtension(_pluginAudioPorts, CLAP_EXT_AUDIO_PORTS);
-   initPluginExtension(_pluginGui, CLAP_EXT_GUI);
-   initPluginExtension(_pluginTimerSupport, CLAP_EXT_TIMER_SUPPORT);
-   initPluginExtension(_pluginPosixFdSupport, CLAP_EXT_POSIX_FD_SUPPORT);
-   initPluginExtension(_pluginThreadPool, CLAP_EXT_THREAD_POOL);
-   initPluginExtension(_pluginPresetLoad, CLAP_EXT_PRESET_LOAD);
-   initPluginExtension(_pluginState, CLAP_EXT_STATE);
-
-   _pluginExtensionsAreInitialized = true;
 }
 
 void PluginHost::unload() {
@@ -172,26 +157,18 @@ void PluginHost::unload() {
       return;
 
    if (_isGuiCreated) {
-      _pluginGui->destroy(_plugin);
+      _plugin->guiDestroy();
       _isGuiCreated = false;
       _isGuiVisible = false;
    }
 
    deactivate();
 
-   if (_plugin) {
-      _plugin->destroy(_plugin);
-      _plugin = nullptr;
+   if (_plugin.get())
+   {
+      _plugin->destroy();
+      _plugin->reset();
    }
-   _pluginGui = nullptr;
-   _pluginTimerSupport = nullptr;
-   _pluginPosixFdSupport = nullptr;
-   _pluginThreadPool = nullptr;
-   _pluginPresetLoad = nullptr;
-   _pluginState = nullptr;
-   _pluginAudioPorts = nullptr;
-   _pluginParams = nullptr;
-   _pluginRemoteControls = nullptr;
 
    _pluginEntry->deinit();
    _pluginEntry = nullptr;
@@ -214,11 +191,11 @@ bool PluginHost::canActivate() const {
 void PluginHost::activate(int32_t sample_rate, int32_t blockSize) {
    checkForMainThread();
 
-   if (!_plugin)
+   if (!_plugin.get())
       return;
 
    assert(!isPluginActive());
-   if (!_plugin->activate(_plugin, sample_rate, blockSize, blockSize)) {
+   if (!_plugin->activate(sample_rate, blockSize, blockSize)) {
       setPluginState(InactiveWithError);
       return;
    }
@@ -239,7 +216,7 @@ void PluginHost::deactivate() {
    }
    _scheduleDeactivate = false;
 
-   _plugin->deactivate(_plugin);
+   _plugin->deactivate();
    setPluginState(Inactive);
 }
 
@@ -288,11 +265,11 @@ static clap_window makeClapWindow(WId window) {
 void PluginHost::setParentWindow(WId parentWindow) {
    checkForMainThread();
 
-   if (!canUsePluginGui())
+   if (!_plugin->canUseGui())
       return;
 
    if (_isGuiCreated) {
-      _pluginGui->destroy(_plugin);
+      _plugin->guiDestroy();
       _isGuiCreated = false;
       _isGuiVisible = false;
    }
@@ -300,8 +277,8 @@ void PluginHost::setParentWindow(WId parentWindow) {
    _guiApi = getCurrentClapGuiApi();
 
    _isGuiFloating = false;
-   if (!_pluginGui->is_api_supported(_plugin, _guiApi, false)) {
-      if (!_pluginGui->is_api_supported(_plugin, _guiApi, true)) {
+   if (!_plugin->guiIsApiSupported(_guiApi, false)) {
+      if (!_plugin->guiIsApiSupported(_guiApi, true)) {
          qWarning() << "could find a suitable gui api";
          return;
       }
@@ -309,7 +286,7 @@ void PluginHost::setParentWindow(WId parentWindow) {
    }
 
    auto w = makeClapWindow(parentWindow);
-   if (!_pluginGui->create(_plugin, w.api, _isGuiFloating)) {
+   if (!_plugin->guiCreate(w.api, _isGuiFloating)) {
       qWarning() << "could not create the plugin gui";
       return;
    }
@@ -318,25 +295,25 @@ void PluginHost::setParentWindow(WId parentWindow) {
    assert(_isGuiVisible == false);
 
    if (_isGuiFloating) {
-      _pluginGui->set_transient(_plugin, &w);
-      _pluginGui->suggest_title(_plugin, "using clap-host suggested title");
+      _plugin->guiSetTransient(&w);
+      _plugin->guiSuggestTitle("using clap-host suggested title");
    } else {
       uint32_t width = 0;
       uint32_t height = 0;
 
-      if (!_pluginGui->get_size(_plugin, &width, &height)) {
+      if (!_plugin->guiGetSize(&width, &height)) {
          qWarning() << "could not get the size of the plugin gui";
          _isGuiCreated = false;
-         _pluginGui->destroy(_plugin);
+         _plugin->guiDestroy();
          return;
       }
 
       Application::instance().mainWindow()->resizePluginView(width, height);
 
-      if (!_pluginGui->set_parent(_plugin, &w)) {
+      if (!_plugin->guiSetParent(&w)) {
          qWarning() << "could embbed the plugin gui";
          _isGuiCreated = false;
-         _pluginGui->destroy(_plugin);
+         _plugin->guiDestroy();
          return;
       }
    }
@@ -351,10 +328,10 @@ void PluginHost::setPluginWindowVisibility(bool isVisible) {
       return;
 
    if (isVisible && !_isGuiVisible) {
-      _pluginGui->show(_plugin);
+      _plugin->guiShow();
       _isGuiVisible = true;
    } else if (!isVisible && _isGuiVisible) {
-      _pluginGui->hide(_plugin);
+      _plugin->guiHide();
       _isGuiVisible = false;
    }
 }
@@ -384,14 +361,6 @@ void PluginHost::logLog(clap_log_severity severity, const char *msg) const noexc
    }
 }
 
-template <typename T>
-void PluginHost::initPluginExtension(const T *&ext, const char *id) {
-   checkForMainThread();
-
-   if (!ext)
-      ext = static_cast<const T *>(_plugin->get_extension(_plugin, id));
-}
-
 bool PluginHost::threadCheckIsMainThread() noexcept {
    return g_thread_type == ThreadType::MainThread;
 }
@@ -417,7 +386,7 @@ void PluginHost::checkForAudioThread() {
 bool PluginHost::threadPoolRequestExec(uint32_t num_tasks) noexcept {
    checkForAudioThread();
 
-   if (!_pluginThreadPool || !_pluginThreadPool->exec)
+   if (!_plugin->canUseThreadPool())
       throw std::logic_error("Called request_exec() without providing clap_plugin_thread_pool to "
                              "execute the job.");
 
@@ -428,7 +397,7 @@ bool PluginHost::threadPoolRequestExec(uint32_t num_tasks) noexcept {
       return true;
 
    if (num_tasks == 1) {
-      _pluginThreadPool->exec(_plugin, 0);
+      _plugin->threadPoolExec(0);
       return true;
    }
 
@@ -441,8 +410,7 @@ bool PluginHost::threadPoolRequestExec(uint32_t num_tasks) noexcept {
 bool PluginHost::timerSupportRegisterTimer(uint32_t period_ms, clap_id *timer_id) noexcept {
    checkForMainThread();
 
-   initPluginExtensions();
-   if (!_pluginTimerSupport || !_pluginTimerSupport->on_timer)
+   if (!_plugin->canUseTimerSupport())
       throw std::logic_error(
          "Called register_timer() without providing clap_plugin_timer_support.on_timer() to "
          "receive the timer event.");
@@ -453,7 +421,7 @@ bool PluginHost::timerSupportRegisterTimer(uint32_t period_ms, clap_id *timer_id
 
    QObject::connect(timer.get(), &QTimer::timeout, [this, id] {
       checkForMainThread();
-      _pluginTimerSupport->on_timer(_plugin, id);
+      _plugin->timerSupportOnTimer(id);
    });
 
    auto t = timer.get();
@@ -465,7 +433,7 @@ bool PluginHost::timerSupportRegisterTimer(uint32_t period_ms, clap_id *timer_id
 bool PluginHost::timerSupportUnregisterTimer(clap_id timer_id) noexcept {
    checkForMainThread();
 
-   if (!_pluginTimerSupport || !_pluginTimerSupport->on_timer)
+   if (!_plugin->canUseTimerSupport())
       throw std::logic_error(
          "Called unregister_timer() without providing clap_plugin_timer_support.on_timer() to "
          "receive the timer event.");
@@ -481,8 +449,7 @@ bool PluginHost::timerSupportUnregisterTimer(clap_id timer_id) noexcept {
 bool PluginHost::posixFdSupportRegisterFd(int fd, clap_posix_fd_flags_t flags) noexcept {
    checkForMainThread();
 
-   initPluginExtensions();
-   if (!_pluginPosixFdSupport || !_pluginPosixFdSupport->on_fd)
+   if (!_plugin->canUsePosixFdSupport())
       throw std::logic_error("Called register_fd() without providing clap_plugin_fd_support to "
                              "receive the fd event.");
 
@@ -499,7 +466,7 @@ bool PluginHost::posixFdSupportRegisterFd(int fd, clap_posix_fd_flags_t flags) n
 bool PluginHost::posixFdSupportModifyFd(int fd, clap_posix_fd_flags_t flags) noexcept {
    checkForMainThread();
 
-   if (!_pluginPosixFdSupport || !_pluginPosixFdSupport->on_fd)
+   if (!_plugin->canUsePosixFdSupport())
       throw std::logic_error("Called modify_fd() without providing clap_plugin_fd_support to "
                              "receive the fd event.");
 
@@ -516,7 +483,7 @@ bool PluginHost::posixFdSupportModifyFd(int fd, clap_posix_fd_flags_t flags) noe
 bool PluginHost::posixFdSupportUnregisterFd(int fd) noexcept {
    checkForMainThread();
 
-   if (!_pluginPosixFdSupport || !_pluginPosixFdSupport->on_fd)
+   if (!_plugin->canUsePosixFdSupport())
       throw std::logic_error("Called unregister_fd() without providing clap_plugin_fd_support to "
                              "receive the fd event.");
 
@@ -539,7 +506,7 @@ void PluginHost::eventLoopSetFdNotifierFlags(int fd, int flags) {
          it->second->rd.reset(new QSocketNotifier((qintptr)fd, QSocketNotifier::Read));
          QObject::connect(it->second->rd.get(), &QSocketNotifier::activated, [this, fd] {
             checkForMainThread();
-            _pluginPosixFdSupport->on_fd(this->_plugin, fd, CLAP_POSIX_FD_READ);
+            h->_plugin->posixFdSupportOnFd(fd, CLAP_POSIX_FD_READ);
          });
       }
       it->second->rd->setEnabled(true);
@@ -551,7 +518,7 @@ void PluginHost::eventLoopSetFdNotifierFlags(int fd, int flags) {
          it->second->wr.reset(new QSocketNotifier((qintptr)fd, QSocketNotifier::Write));
          QObject::connect(it->second->wr.get(), &QSocketNotifier::activated, [this, fd] {
             checkForMainThread();
-            _pluginPosixFdSupport->on_fd(this->_plugin, fd, CLAP_POSIX_FD_WRITE);
+            h->_plugin->posixFdSupportOnFd(fd, CLAP_POSIX_FD_WRITE);
          });
       }
       it->second->wr->setEnabled(true);
@@ -674,7 +641,7 @@ void PluginHost::processCC(int sampleOffset, int channel, int cc, int value) {
 void PluginHost::process() {
    checkForAudioThread();
 
-   if (!_plugin)
+   if (!_plugin.get())
       return;
 
    // Can't process a plugin that is not active
@@ -685,7 +652,7 @@ void PluginHost::process() {
    if (_scheduleDeactivate) {
       _scheduleDeactivate = false;
       if (_state == ActiveAndProcessing)
-         _plugin->stop_processing(_plugin);
+         _plugin->stopProcessing();
       setPluginState(ActiveAndReadyToDeactivate);
       return;
    }
@@ -714,7 +681,7 @@ void PluginHost::process() {
          return;
 
       _scheduleProcess = false;
-      if (!_plugin->start_processing(_plugin)) {
+      if (!_plugin->startProcessing()) {
          // the plugin failed to start processing
          setPluginState(ActiveWithError);
          return;
@@ -725,7 +692,7 @@ void PluginHost::process() {
 
    int32_t status = CLAP_PROCESS_SLEEP;
    if (isPluginProcessing())
-      status = _plugin->process(_plugin, &_process);
+      status = _plugin->process(&_process);
 
    handlePluginOutputEvents();
 
@@ -833,8 +800,8 @@ void PluginHost::paramFlushOnMainThread() {
 
    generatePluginInputEvents();
 
-   if (canUsePluginParams())
-      _pluginParams->flush(_plugin, _evIn.clapInputEvents(), _evOut.clapOutputEvents());
+   if (_plugin->canUseParams())
+      _plugin->paramsFlush(_evIn.clapInputEvents(), _evOut.clapOutputEvents());
    handlePluginOutputEvents();
 
    _evOut.clear();
@@ -872,7 +839,7 @@ void PluginHost::idle() {
 
    if (_scheduleMainThreadCallback) {
       _scheduleMainThreadCallback = false;
-      _plugin->on_main_thread(_plugin);
+      _plugin->onMainThread();
    }
 
    if (_scheduleRestart) {
@@ -943,7 +910,7 @@ void PluginHost::scanParams() { paramsRescan(CLAP_PARAM_RESCAN_ALL); }
 void PluginHost::paramsRescan(uint32_t flags) noexcept {
    checkForMainThread();
 
-   if (!canUsePluginParams())
+   if (!_plugin->canUseParams())
       return;
 
    // 1. it is forbidden to use CLAP_PARAM_RESCAN_ALL if the plugin is active
@@ -954,12 +921,12 @@ void PluginHost::paramsRescan(uint32_t flags) noexcept {
    }
 
    // 2. scan the params.
-   auto count = _pluginParams->count(_plugin);
+   auto count = _plugin.paramsCount();
    std::unordered_set<clap_id> paramIds(count * 2);
 
    for (int32_t i = 0; i < count; ++i) {
       clap_param_info info;
-      if (!_pluginParams->get_info(_plugin, i, &info))
+      if (!_plugin.paramsGetInfo(i, &info))
          throw std::logic_error("clap_plugin_params.get_info did return false!");
 
       if (info.id == CLAP_INVALID_ID) {
@@ -1081,11 +1048,11 @@ void PluginHost::paramsRequestFlush() noexcept {
 double PluginHost::getParamValue(const clap_param_info &info) {
    checkForMainThread();
 
-   if (!canUsePluginParams())
+   if (!_plugin->canUseParams())
       return 0;
 
    double value;
-   if (_pluginParams->get_value(_plugin, info.id, &value))
+   if (_plugin->paramsGetValue(info.id, &value))
       return value;
 
    std::ostringstream msg;
@@ -1097,20 +1064,14 @@ double PluginHost::getParamValue(const clap_param_info &info) {
 void PluginHost::scanQuickControls() {
    checkForMainThread();
 
-   if (!_pluginRemoteControls)
+   if (!_plugin->canUseRemoteControls())
       return;
-
-   if (!_pluginRemoteControls->get || !_pluginRemoteControls->count) {
-      std::ostringstream msg;
-      msg << "clap_plugin_remote_controls is partially implemented.";
-      throw std::logic_error(msg.str());
-   }
 
    quickControlsSetSelectedPage(CLAP_INVALID_ID);
    _remoteControlsPages.clear();
    _remoteControlsPagesIndex.clear();
 
-   const auto N = _pluginRemoteControls->count(_plugin);
+   const auto N = _plugin->remoteControlsCount();
    if (N == 0)
       return;
 
@@ -1120,7 +1081,7 @@ void PluginHost::scanQuickControls() {
    clap_id firstPageId = CLAP_INVALID_ID;
    for (int i = 0; i < N; ++i) {
       auto page = std::make_unique<clap_remote_controls_page>();
-      if (!_pluginRemoteControls->get(_plugin, i, page.get())) {
+      if (!_plugin->remoteControlsGet(i, page.get())) {
          std::ostringstream msg;
          msg << "clap_plugin_remote_controls.get_page(" << i << ") failed, while the page count is "
              << N;
@@ -1184,7 +1145,7 @@ void PluginHost::setRemoteControlsSelectedPageByHost(clap_id page_id) {
 void PluginHost::remoteControlsChanged() noexcept {
    checkForMainThread();
 
-   if (!_pluginRemoteControls) {
+   if (!_plugin->canUseRemoteControls()) {
       std::ostringstream msg;
       msg << "Plugin called clap_host_remote_controls.changed() but does not provide "
              "clap_plugin_remote_controls";
@@ -1197,7 +1158,7 @@ void PluginHost::remoteControlsChanged() noexcept {
 void PluginHost::remoteControlsSuggestPage(clap_id page_id) noexcept {
    checkForMainThread();
 
-   if (!_pluginRemoteControls) {
+   if (!_plugin->canUseRemoteControls()) {
       std::ostringstream msg;
       msg << "Plugin called clap_host_remote_controls.suggest_page() but does not provide "
              "clap_plugin_remote_controls";
@@ -1210,20 +1171,18 @@ void PluginHost::remoteControlsSuggestPage(clap_id page_id) noexcept {
 bool PluginHost::loadNativePluginPreset(const std::string &path) {
    checkForMainThread();
 
-   if (!_pluginPresetLoad)
+   if (!_plugin->canUsePresetLoad())
       return false;
 
-   if (!_pluginPresetLoad->from_location)
-      throw std::logic_error("clap_plugin_preset_load does not implement load_from_uri");
-
-   return _pluginPresetLoad->from_location(
-      _plugin, CLAP_PRESET_DISCOVERY_LOCATION_FILE, path.c_str(), nullptr);
+   return _plugin->presetLoadFromLocation(
+      CLAP_PRESET_DISCOVERY_LOCATION_FILE, path.c_str(), nullptr);
 }
 
 void PluginHost::stateMarkDirty() noexcept {
    checkForMainThread();
 
-   if (!_pluginState || !_pluginState->save || !_pluginState->load)
+
+   if (!_plugin->canUseState())
       throw std::logic_error("Plugin called clap_host_state.set_dirty() but the host does not "
                              "provide a complete clap_plugin_state interface.");
 
@@ -1281,24 +1240,11 @@ bool PluginHost::isPluginSleeping() const { return _state == ActiveAndSleeping; 
 QString PluginHost::paramValueToText(clap_id paramId, double value) {
    std::array<char, 256> buffer;
 
-   if (!canUsePluginParams())
+   if (!_plugin->canUseParams())
       return "-";
 
-   if (_pluginParams->value_to_text(_plugin, paramId, value, buffer.data(), buffer.size()))
+   if (_plugin->paramsValueToText(paramId, value, buffer.data(), buffer.size()))
       return buffer.data();
 
    return QString::number(value);
-}
-
-bool PluginHost::canUsePluginParams() const noexcept {
-   return _pluginParams && _pluginParams->count && _pluginParams->flush &&
-          _pluginParams->get_info && _pluginParams->get_value && _pluginParams->text_to_value &&
-          _pluginParams->value_to_text;
-}
-
-bool PluginHost::canUsePluginGui() const noexcept {
-   return _pluginGui && _pluginGui->create && _pluginGui->destroy && _pluginGui->can_resize &&
-          _pluginGui->get_size && _pluginGui->adjust_size && _pluginGui->set_size &&
-          _pluginGui->set_scale && _pluginGui->hide && _pluginGui->show &&
-          _pluginGui->suggest_title && _pluginGui->is_api_supported;
 }
