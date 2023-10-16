@@ -23,7 +23,14 @@
 
 class Engine;
 class PluginHostSettings;
-class PluginHost final : public clap::helpers::Host, public QObject {
+
+constexpr auto PluginHost_MH = clap::helpers::MisbehaviourHandler::Terminate;
+constexpr auto PluginHost_CL = clap::helpers::CheckingLevel::Maximal;
+
+using BaseHost = clap::helpers::Host<PluginHost_MH, PluginHost_CL>;
+extern template class clap::helpers::Host<PluginHost_MH, PluginHost_CL>;
+
+class PluginHost final : public QObject, public BaseHost {
    Q_OBJECT;
 
 public:
@@ -89,56 +96,55 @@ protected:
    /////////////////////////
 
    // clap_host
-   virtual void requestRestart() noexcept override;
-   virtual void requestProcess() noexcept override;
-   virtual void requestCallback() noexcept override;
+   void requestRestart() noexcept override;
+   void requestProcess() noexcept override;
+   void requestCallback() noexcept override;
 
    // clap_host_gui
-   virtual bool implementsGui() const noexcept override { return true; }
-   virtual void guiResizeHintsChanged() noexcept override;
-   virtual bool guiRequestResize(uint32_t width, uint32_t height) noexcept override;
-   virtual bool guiRequestShow() noexcept override;
-   virtual bool guiRequestHide() noexcept override;
-   virtual void guiClosed(bool wasDestroyed) noexcept override;
+   bool implementsGui() const noexcept override { return true; }
+   void guiResizeHintsChanged() noexcept override;
+   bool guiRequestResize(uint32_t width, uint32_t height) noexcept override;
+   bool guiRequestShow() noexcept override;
+   bool guiRequestHide() noexcept override;
+   void guiClosed(bool wasDestroyed) noexcept override;
 
    // clap_host_log
-   virtual bool implementsLog() const noexcept override { return true; }
-   virtual void logLog(clap_log_severity severity, const char *message) const noexcept override;
+   bool implementsLog() const noexcept override { return true; }
+   void logLog(clap_log_severity severity, const char *message) const noexcept override;
 
    // clap_host_params
-   virtual bool implementsParams() const noexcept override { return true; }
-   virtual void paramsRescan(clap_param_rescan_flags flags) noexcept override;
-   virtual void paramsClear(clap_id paramId, clap_param_clear_flags flags) noexcept override;
-   virtual void paramsRequestFlush() noexcept;
+   bool implementsParams() const noexcept override { return true; }
+   void paramsRescan(clap_param_rescan_flags flags) noexcept override;
+   void paramsClear(clap_id paramId, clap_param_clear_flags flags) noexcept override;
+   void paramsRequestFlush() noexcept override;
 
    // clap_host_posix_fd_support
-   virtual bool implementsPosixFdSupport() const noexcept override { return true; }
-   virtual bool posixFdSupportRegisterFd(int fd, clap_posix_fd_flags_t flags) noexcept override;
-   virtual bool posixFdSupportModifyFd(int fd, clap_posix_fd_flags_t flags) noexcept override;
-   virtual bool posixFdSupportUnregisterFd(int fd) noexcept override;
+   bool implementsPosixFdSupport() const noexcept override { return true; }
+   bool posixFdSupportRegisterFd(int fd, clap_posix_fd_flags_t flags) noexcept override;
+   bool posixFdSupportModifyFd(int fd, clap_posix_fd_flags_t flags) noexcept override;
+   bool posixFdSupportUnregisterFd(int fd) noexcept override;
 
    // clap_host_remote_controls
-   virtual bool implementsRemoteControls() const noexcept override { return true; }
-   virtual void remoteControlsChanged() noexcept override;
-   virtual void remoteControlsSuggestPage(clap_id pageId) noexcept override {}
+   bool implementsRemoteControls() const noexcept override { return true; }
+   void remoteControlsChanged() noexcept override;
+   void remoteControlsSuggestPage(clap_id pageId) noexcept override;
 
    // clap_host_state
-   virtual bool implementsState() const noexcept override { return true; }
-   virtual void stateMarkDirty() noexcept override;
+   bool implementsState() const noexcept override { return true; }
+   void stateMarkDirty() noexcept override;
 
    // clap_host_timer_support
-   virtual bool implementsTimerSupport() const noexcept override { return true; }
-   virtual bool timerSupportRegisterTimer(uint32_t periodMs, clap_id *timerId) noexcept override;
-   virtual bool timerSupportUnregisterTimer(clap_id timerId) noexcept override;
+   bool implementsTimerSupport() const noexcept override { return true; }
+   bool timerSupportRegisterTimer(uint32_t periodMs, clap_id *timerId) noexcept override;
+   bool timerSupportUnregisterTimer(clap_id timerId) noexcept override;
 
    // clap_host_thread_check
-   virtual bool implementsThreadCheck() const noexcept override { return true; }
-   virtual bool threadCheckIsMainThread() noexcept override;
-   virtual bool threadCheckIsAudioThread() noexcept override;
+   bool threadCheckIsMainThread() noexcept override;
+   bool threadCheckIsAudioThread() noexcept override;
 
    // clap_host_thread_pool
-   virtual bool implementsThreadPool() const noexcept override { return true; }
-   virtual bool threadPoolRequestExec(uint32_t numTasks) noexcept override;
+   bool implementsThreadPool() const noexcept override { return true; }
+   bool threadPoolRequestExec(uint32_t numTasks) noexcept override;
 
 private:
    template <typename T>

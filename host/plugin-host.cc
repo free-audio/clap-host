@@ -15,6 +15,7 @@
 #include "plugin-host.hh"
 #include "settings.hh"
 
+#include <clap/helpers/host.hxx>
 #include <clap/helpers/reducing-param-queue.hxx>
 
 enum class ThreadType {
@@ -26,13 +27,15 @@ enum class ThreadType {
 
 thread_local ThreadType g_thread_type = ThreadType::Unknown;
 
+template class clap::helpers::Host<PluginHost_MH, PluginHost_CL>;
+
 PluginHost::PluginHost(Engine &engine)
-   : clap::helpers::Host("Clap Test Host",                    // name
-                         "clap",                              // vendor
-                         "0.1.0",                             // version
-                         "https://github.com/free-audio/clap" // url
-                         ),
-     QObject(&engine), _engine(engine), _settings(engine._settings.pluginHostSettings()) {
+   : QObject(&engine), _engine(engine), _settings(engine._settings.pluginHostSettings()),
+     BaseHost("Clap Test Host",                    // name
+              "clap",                              // vendor
+              "0.1.0",                             // version
+              "https://github.com/free-audio/clap" // url
+     ) {
    g_thread_type = ThreadType::MainThread;
 
    initThreadPool();
@@ -356,19 +359,13 @@ void PluginHost::setPluginWindowVisibility(bool isVisible) {
    }
 }
 
-void PluginHost::requestCallback() noexcept {
-   _scheduleMainThreadCallback = true;
-}
+void PluginHost::requestCallback() noexcept { _scheduleMainThreadCallback = true; }
 
-void PluginHost::requestProcess() noexcept {
-   _scheduleProcess = true;
-}
+void PluginHost::requestProcess() noexcept { _scheduleProcess = true; }
 
-void PluginHost::requestRestart() noexcept {
-   _scheduleRestart = true;
-}
+void PluginHost::requestRestart() noexcept { _scheduleRestart = true; }
 
-void PluginHost::logLog(clap_log_severity severity, const char *msg) noexcept {
+void PluginHost::logLog(clap_log_severity severity, const char *msg) const noexcept {
    switch (severity) {
    case CLAP_LOG_DEBUG:
       qDebug() << msg;
@@ -403,14 +400,18 @@ bool PluginHost::threadCheckIsAudioThread() noexcept {
    return g_thread_type == ThreadType::AudioThread;
 }
 
-void PluginHost::checkForMainThread() noexcept {
-   if (g_thread_type != ThreadType::MainThread)
-      throw std::logic_error("Requires Main Thread!");
+void PluginHost::checkForMainThread() {
+   if (g_thread_type != ThreadType::MainThread) [[unlikely]] {
+      qFatal() << "Requires Main Thread!";
+      std::terminate();
+   }
 }
 
 void PluginHost::checkForAudioThread() {
-   if (g_thread_type != ThreadType::AudioThread)
-      throw std::logic_error("Requires Audio Thread!");
+   if (g_thread_type != ThreadType::AudioThread) {
+      qFatal() << "Requires Audio Thread!";
+      std::terminate();
+   }
 }
 
 bool PluginHost::threadPoolRequestExec(uint32_t num_tasks) noexcept {
@@ -571,7 +572,7 @@ bool PluginHost::guiRequestResize(uint32_t width, uint32_t height) noexcept {
    return true;
 }
 
-bool PluginHost::clapGuiRequestShow() noexcept {
+bool PluginHost::guiRequestShow() noexcept {
    QMetaObject::invokeMethod(
       Application::instance().mainWindow(),
       [] { Application::instance().mainWindow()->showPluginWindow(); },
@@ -580,7 +581,7 @@ bool PluginHost::clapGuiRequestShow() noexcept {
    return true;
 }
 
-bool PluginHost::clapGuiRequestHide() noexcept {
+bool PluginHost::guiRequestHide() noexcept {
    QMetaObject::invokeMethod(
       Application::instance().mainWindow(),
       [] { Application::instance().mainWindow()->hidePluginWindow(); },
@@ -589,7 +590,7 @@ bool PluginHost::clapGuiRequestHide() noexcept {
    return true;
 }
 
-void PluginHost::clapGuiClosed(bool wasDestroyed) noexcept { checkForMainThread(); }
+void PluginHost::guiClosed(bool wasDestroyed) noexcept { checkForMainThread(); }
 
 void PluginHost::processBegin(int nframes) {
    g_thread_type = ThreadType::AudioThread;
@@ -1062,8 +1063,7 @@ void PluginHost::paramsRescan(uint32_t flags) noexcept {
       paramsChanged();
 }
 
-void PluginHost::paramsClear(clap_id param_id,
-                             clap_param_clear_flags flags) noexcept {
+void PluginHost::paramsClear(clap_id param_id, clap_param_clear_flags flags) noexcept {
    checkForMainThread();
 }
 
@@ -1188,7 +1188,7 @@ void PluginHost::remoteControlsChanged() noexcept {
       std::ostringstream msg;
       msg << "Plugin called clap_host_remote_controls.changed() but does not provide "
              "clap_plugin_remote_controls";
-      throw std::logic_error(msg.str());
+      std::terminate();
    }
 
    scanQuickControls();
@@ -1216,7 +1216,8 @@ bool PluginHost::loadNativePluginPreset(const std::string &path) {
    if (!_pluginPresetLoad->from_location)
       throw std::logic_error("clap_plugin_preset_load does not implement load_from_uri");
 
-   return _pluginPresetLoad->from_location(_plugin, CLAP_PRESET_DISCOVERY_LOCATION_FILE, path.c_str(), nullptr);
+   return _pluginPresetLoad->from_location(
+      _plugin, CLAP_PRESET_DISCOVERY_LOCATION_FILE, path.c_str(), nullptr);
 }
 
 void PluginHost::stateMarkDirty() noexcept {
