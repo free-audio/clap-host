@@ -62,11 +62,14 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: sudo apt update && sudo apt upgrade && sudo apt install
           build-essential gperf ninja-build cmake
-          libgl1-mesa-dev
+          libatspi2.0-dev
           libfontconfig1-dev
           libfreetype6-dev
+          libgl1-mesa-dev
+          libglu1-mesa-dev
           libx11-dev
           libx11-xcb-dev
+          '^libxcb.*-dev'
           libxcb-damage0-dev
           libxcb-dpms0-dev
           libxcb-glx0-dev
@@ -93,7 +96,7 @@ jobs:
           libxkbcommon-dev
           libxkbcommon-x11-dev
           libxrender-dev
-          libatspi2.0-dev
+          libxrender-dev
           nuget
 
       - name: 'Bootstrap VCPKG'
