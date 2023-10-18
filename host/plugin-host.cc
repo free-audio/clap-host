@@ -506,7 +506,7 @@ void PluginHost::eventLoopSetFdNotifierFlags(int fd, int flags) {
          it->second->rd.reset(new QSocketNotifier((qintptr)fd, QSocketNotifier::Read));
          QObject::connect(it->second->rd.get(), &QSocketNotifier::activated, [this, fd] {
             checkForMainThread();
-            h->_plugin->posixFdSupportOnFd(fd, CLAP_POSIX_FD_READ);
+            _plugin->posixFdSupportOnFd(fd, CLAP_POSIX_FD_READ);
          });
       }
       it->second->rd->setEnabled(true);
@@ -518,7 +518,7 @@ void PluginHost::eventLoopSetFdNotifierFlags(int fd, int flags) {
          it->second->wr.reset(new QSocketNotifier((qintptr)fd, QSocketNotifier::Write));
          QObject::connect(it->second->wr.get(), &QSocketNotifier::activated, [this, fd] {
             checkForMainThread();
-            h->_plugin->posixFdSupportOnFd(fd, CLAP_POSIX_FD_WRITE);
+            _plugin->posixFdSupportOnFd(fd, CLAP_POSIX_FD_WRITE);
          });
       }
       it->second->wr->setEnabled(true);
@@ -921,12 +921,12 @@ void PluginHost::paramsRescan(uint32_t flags) noexcept {
    }
 
    // 2. scan the params.
-   auto count = _plugin.paramsCount();
+   auto count = _plugin->paramsCount();
    std::unordered_set<clap_id> paramIds(count * 2);
 
    for (int32_t i = 0; i < count; ++i) {
       clap_param_info info;
-      if (!_plugin.paramsGetInfo(i, &info))
+      if (!_plugin->paramsGetInfo(i, &info))
          throw std::logic_error("clap_plugin_params.get_info did return false!");
 
       if (info.id == CLAP_INVALID_ID) {
