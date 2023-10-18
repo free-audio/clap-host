@@ -17,6 +17,7 @@
 #include <clap/helpers/event-list.hh>
 #include <clap/helpers/reducing-param-queue.hh>
 #include <clap/helpers/host.hh>
+#include <clap/helpers/plugin-proxy.hh>
 
 #include "engine.hh"
 #include "plugin-param.hh"
@@ -29,6 +30,9 @@ constexpr auto PluginHost_CL = clap::helpers::CheckingLevel::Maximal;
 
 using BaseHost = clap::helpers::Host<PluginHost_MH, PluginHost_CL>;
 extern template class clap::helpers::Host<PluginHost_MH, PluginHost_CL>;
+
+using PluginProxy = clap::helpers::PluginProxy<PluginHost_MH, PluginHost_CL>;
+extern template class clap::helpers::PluginProxy<PluginHost_MH, PluginHost_CL>;
 
 class PluginHost final : public QObject, public BaseHost {
    Q_OBJECT;
@@ -61,7 +65,6 @@ public:
 
    void idle();
 
-   void initPluginExtensions();
    void initThreadPool();
    void terminateThreadPool();
    void threadPoolEntry();
@@ -147,9 +150,6 @@ protected:
    bool threadPoolRequestExec(uint32_t numTasks) noexcept override;
 
 private:
-   template <typename T>
-   void initPluginExtension(const T *&ext, const char *id);
-
    /* clap host callbacks */
    void scanParams();
    void scanParam(int32_t index);
@@ -170,8 +170,6 @@ private:
 
    void eventLoopSetFdNotifierFlags(int fd, int flags);
 
-   bool canUsePluginParams() const noexcept;
-   bool canUsePluginGui() const noexcept;
    static const char *getCurrentClapGuiApi();
 
    void paramFlushOnMainThread();
@@ -186,18 +184,7 @@ private:
 
    const clap_plugin_entry *_pluginEntry = nullptr;
    const clap_plugin_factory *_pluginFactory = nullptr;
-   const clap_plugin *_plugin = nullptr;
-   const clap_plugin_params *_pluginParams = nullptr;
-   const clap_plugin_remote_controls *_pluginRemoteControls = nullptr;
-   const clap_plugin_audio_ports *_pluginAudioPorts = nullptr;
-   const clap_plugin_gui *_pluginGui = nullptr;
-   const clap_plugin_timer_support *_pluginTimerSupport = nullptr;
-   const clap_plugin_posix_fd_support *_pluginPosixFdSupport = nullptr;
-   const clap_plugin_thread_pool *_pluginThreadPool = nullptr;
-   const clap_plugin_preset_load *_pluginPresetLoad = nullptr;
-   const clap_plugin_state *_pluginState = nullptr;
-
-   bool _pluginExtensionsAreInitialized = false;
+   std::unique_ptr<PluginProxy> _plugin;
 
    /* timers */
    clap_id _nextTimerId = 0;
