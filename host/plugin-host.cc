@@ -138,7 +138,7 @@ bool PluginHost::load(const QString &path, int pluginIndex) {
       return false;
    }
 
-   _plugin = std::make_unique<PluginProxy>(*plugin);
+   _plugin = std::make_unique<PluginProxy>(*plugin, *this);
 
    if (!_plugin->init()) {
       qWarning() << "could not init the plugin with id: " << desc->id;
@@ -361,11 +361,11 @@ void PluginHost::logLog(clap_log_severity severity, const char *msg) const noexc
    }
 }
 
-bool PluginHost::threadCheckIsMainThread() noexcept {
+bool PluginHost::threadCheckIsMainThread() const noexcept {
    return g_thread_type == ThreadType::MainThread;
 }
 
-bool PluginHost::threadCheckIsAudioThread() noexcept {
+bool PluginHost::threadCheckIsAudioThread() const noexcept {
    return g_thread_type == ThreadType::AudioThread;
 }
 

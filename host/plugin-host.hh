@@ -142,8 +142,8 @@ protected:
    bool timerSupportUnregisterTimer(clap_id timerId) noexcept override;
 
    // clap_host_thread_check
-   bool threadCheckIsMainThread() noexcept override;
-   bool threadCheckIsAudioThread() noexcept override;
+   bool threadCheckIsMainThread() const noexcept override;
+   bool threadCheckIsAudioThread() const noexcept override;
 
    // clap_host_thread_pool
    bool implementsThreadPool() const noexcept override { return true; }
