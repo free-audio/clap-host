@@ -19,7 +19,6 @@ add_executable(clap-host
   plugin-quick-controls-widget.cc
   plugin-quick-controls-widget.hh
 
-  CMakeLists.txt
   device-reference.hh
   engine.cc
   engine.hh

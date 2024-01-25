@@ -1,3 +1,6 @@
+# OS's
+.DS_Store
+
 # Prerequisites
 *.d
 
@@ -51,6 +54,9 @@ compile_commands.json
 
 # IntelliJ IDEA
 .idea
+
+# Qt Creator
+*.txt.user
 
 # CMake common patterns
 build*/
