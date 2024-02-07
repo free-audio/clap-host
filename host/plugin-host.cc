@@ -1171,6 +1171,12 @@ void PluginHost::remoteControlsSuggestPage(clap_id page_id) noexcept {
 bool PluginHost::loadNativePluginPreset(const std::string &path) {
    checkForMainThread();
 
+    if(!_plugin)
+    {
+        std::cerr << "called with a null clap_plugin pointer!" << std::endl;
+        return false;
+    }
+
    if (!_plugin->canUsePresetLoad())
       return false;
 
