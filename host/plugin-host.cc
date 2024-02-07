@@ -265,6 +265,12 @@ static clap_window makeClapWindow(WId window) {
 void PluginHost::setParentWindow(WId parentWindow) {
    checkForMainThread();
 
+    if(!_plugin)
+    {
+        std::cerr << "called with a null clap_plugin pointer!" << std::endl;
+        return;
+    }
+
    if (!_plugin->canUseGui())
       return;
 
