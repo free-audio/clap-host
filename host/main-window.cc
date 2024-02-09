@@ -46,7 +46,9 @@ void MainWindow::createMenu() {
 
    QMenu *fileMenu = menuBar->addMenu(tr("File"));
    // TODO: fileMenu->addAction(tr("Load plugin"));
-   connect(fileMenu->addAction(tr("Load Native Plugin Preset")),
+
+   _loadPluginPresetAction = fileMenu->addAction(tr("Load Native Plugin Preset"));
+   connect(_loadPluginPresetAction,
            &QAction::triggered,
            this,
            &MainWindow::loadNativePluginPreset);
@@ -62,11 +64,15 @@ void MainWindow::createMenu() {
            &Application::quit);
 
    auto windowsMenu = menuBar->addMenu("Windows");
-   connect(windowsMenu->addAction(tr("Show Parameters")),
+
+   _showPluginParametersAction = windowsMenu->addAction(tr("Show Parameters"));
+   connect(_showPluginParametersAction,
            &QAction::triggered,
            this,
            &MainWindow::showPluginParametersWindow);
-   connect(windowsMenu->addAction(tr("Show Quick Controls")),
+
+   _showPluginQuickControlsAction = windowsMenu->addAction(tr("Show Quick Controls"));
+   connect(_showPluginQuickControlsAction,
            &QAction::triggered,
            this,
            &MainWindow::showPluginQuickControlsWindow);
@@ -76,11 +82,15 @@ void MainWindow::createMenu() {
       dialog.exec();
    });
    menuBar->addSeparator();
-   connect(windowsMenu->addAction(tr("Toggle Plugin Window Visibility")),
+
+   _togglePluginWindowVisibilityAction = windowsMenu->addAction(tr("Toggle Plugin Window Visibility"));
+   connect(_togglePluginWindowVisibilityAction,
            &QAction::triggered,
            this,
            &MainWindow::togglePluginWindowVisibility);
-   connect(windowsMenu->addAction(tr("Recreate Plugin Window")),
+
+   _recreatePluginWindowAction = windowsMenu->addAction(tr("Recreate Plugin Window"));
+   connect(_recreatePluginWindowAction,
            &QAction::triggered,
            this,
            &MainWindow::recreatePluginWindow);
@@ -88,6 +98,16 @@ void MainWindow::createMenu() {
    QMenu *helpMenu = menuBar->addMenu(tr("Help"));
    connect(
       helpMenu->addAction(tr("About")), &QAction::triggered, this, &MainWindow::showAboutDialog);
+
+   updateMenuItems();
+}
+
+void MainWindow::updateMenuItems() {
+   _loadPluginPresetAction->setEnabled(_pluginLoaded);
+   _showPluginParametersAction->setEnabled(_pluginLoaded);
+   _showPluginQuickControlsAction->setEnabled(_pluginLoaded);
+   _togglePluginWindowVisibilityAction->setEnabled(_pluginLoaded);
+   _recreatePluginWindowAction->setEnabled(_pluginLoaded);
 }
 
 void MainWindow::showSettingsDialog() {
@@ -115,6 +135,11 @@ void MainWindow::resizePluginView(int width, int height) {
    _pluginViewWidget->setFixedSize(sw, sh);
    _pluginViewWidget->show();
    adjustSize();
+}
+
+void MainWindow::onPluginLoadChange(bool const i_pluginLoaded) {
+   _pluginLoaded = i_pluginLoaded;
+   updateMenuItems();
 }
 
 void MainWindow::loadNativePluginPreset() {
