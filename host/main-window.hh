@@ -25,7 +25,6 @@ public:
    void showPluginParametersWindow();
    void showPluginQuickControlsWindow();
    void resizePluginView(int width, int height);
-   void onPluginLoadChange(bool i_pluginLoaded);
 
    void showPluginWindow() { _pluginViewWidget->show(); }
 
@@ -42,7 +41,7 @@ private:
    void togglePluginWindowVisibility();
    void recreatePluginWindow();
    void showAboutDialog();
-   void updateMenuItems();
+   void updatePluginMenuItems(bool pluginLoaded = false);
 
    Application &_application;
    QWindow *_pluginViewWindow = nullptr;
@@ -53,8 +52,6 @@ private:
    QAction *_showPluginQuickControlsAction = nullptr;
    QAction *_togglePluginWindowVisibilityAction = nullptr;
    QAction *_recreatePluginWindowAction = nullptr;
-
-   bool _pluginLoaded = false;
 
    PluginParametersWidget *_pluginParametersWidget = nullptr;
    PluginQuickControlsWidget *_pluginRemoteControlsWidget = nullptr;

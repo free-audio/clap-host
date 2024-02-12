@@ -148,7 +148,7 @@ bool PluginHost::load(const QString &path, int pluginIndex) {
    scanParams();
    scanQuickControls();
 
-   Application::instance().mainWindow()->onPluginLoadChange(true);
+   pluginLoadedChanged(true);
 
    return true;
 }
@@ -156,7 +156,7 @@ bool PluginHost::load(const QString &path, int pluginIndex) {
 void PluginHost::unload() {
    checkForMainThread();
 
-   Application::instance().mainWindow()->onPluginLoadChange(false);
+   pluginLoadedChanged(false);
 
    if (!_library.isLoaded())
       return;

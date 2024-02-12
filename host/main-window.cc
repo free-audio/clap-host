@@ -99,15 +99,18 @@ void MainWindow::createMenu() {
    connect(
       helpMenu->addAction(tr("About")), &QAction::triggered, this, &MainWindow::showAboutDialog);
 
-   updateMenuItems();
+   updatePluginMenuItems();
+
+   assert(_application.engine());
+   connect(&_application.engine()->pluginHost(), &PluginHost::pluginLoadedChanged, this, &MainWindow::updatePluginMenuItems);
 }
 
-void MainWindow::updateMenuItems() {
-   _loadPluginPresetAction->setEnabled(_pluginLoaded);
-   _showPluginParametersAction->setEnabled(_pluginLoaded);
-   _showPluginQuickControlsAction->setEnabled(_pluginLoaded);
-   _togglePluginWindowVisibilityAction->setEnabled(_pluginLoaded);
-   _recreatePluginWindowAction->setEnabled(_pluginLoaded);
+void MainWindow::updatePluginMenuItems(bool const pluginLoaded /* = false */ ) {
+   _loadPluginPresetAction->setEnabled(pluginLoaded);
+   _showPluginParametersAction->setEnabled(pluginLoaded);
+   _showPluginQuickControlsAction->setEnabled(pluginLoaded);
+   _togglePluginWindowVisibilityAction->setEnabled(pluginLoaded);
+   _recreatePluginWindowAction->setEnabled(pluginLoaded);
 }
 
 void MainWindow::showSettingsDialog() {
@@ -135,11 +138,6 @@ void MainWindow::resizePluginView(int width, int height) {
    _pluginViewWidget->setFixedSize(sw, sh);
    _pluginViewWidget->show();
    adjustSize();
-}
-
-void MainWindow::onPluginLoadChange(bool const i_pluginLoaded) {
-   _pluginLoaded = i_pluginLoaded;
-   updateMenuItems();
 }
 
 void MainWindow::loadNativePluginPreset() {

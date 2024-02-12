@@ -92,6 +92,7 @@ signals:
    void quickControlsPagesChanged();
    void quickControlsSelectedPageChanged();
    void paramAdjusted(clap_id paramId);
+   void pluginLoadedChanged(bool pluginLoaded);
 
 protected:
    /////////////////////////
