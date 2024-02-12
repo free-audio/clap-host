@@ -147,11 +147,16 @@ bool PluginHost::load(const QString &path, int pluginIndex) {
 
    scanParams();
    scanQuickControls();
+
+   pluginLoadedChanged(true);
+
    return true;
 }
 
 void PluginHost::unload() {
    checkForMainThread();
+
+   pluginLoadedChanged(false);
 
    if (!_library.isLoaded())
       return;
@@ -1170,12 +1175,6 @@ void PluginHost::remoteControlsSuggestPage(clap_id page_id) noexcept {
 
 bool PluginHost::loadNativePluginPreset(const std::string &path) {
    checkForMainThread();
-
-    if(!_plugin)
-    {
-        std::cerr << "called with a null clap_plugin pointer!" << std::endl;
-        return false;
-    }
 
    if (!_plugin->canUsePresetLoad())
       return false;
