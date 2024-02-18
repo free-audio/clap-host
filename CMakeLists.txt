@@ -1,9 +1,7 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.24)
 cmake_policy(SET CMP0091 NEW) # use CMAKE_MSVC_RUNTIME_LIBRARY
 cmake_policy(SET CMP0100 NEW) # handle .hh files
 cmake_policy(SET CMP0110 NEW) # arbitrary test name
-
-enable_testing()
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
 
@@ -13,11 +11,10 @@ set(UsePkgConfig TRUE CACHE BOOL "Use PkgConfig to find RtMidi and RtAudio depen
 set(CLAP_HOST_BUNDLE FALSE CACHE BOOL "Produce a macOS bundle")
 set(CLAP_HOST_BINARY clap-host CACHE STRING "File name of the resulting binary")
 
+include(cmake/Dependencies.cmake)
+
 set(CMAKE_AUTOMOC ON)
 
-#find_package(Qt6 COMPONENTS Widgets REQUIRED)
-find_package(Qt6Core CONFIG REQUIRED)
-find_package(Qt6Widgets CONFIG REQUIRED)
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang|Clang|GNU")
   add_compile_options(-fvisibility=hidden -fvisibility-inlines-hidden
@@ -29,9 +26,9 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang|Clang")
   add_compile_options(-Wmost -Wsuper-class-method-mismatch)
 endif()
 
-add_subdirectory(clap EXCLUDE_FROM_ALL)
-add_subdirectory(clap-helpers EXCLUDE_FROM_ALL)
-
+#find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt6Core CONFIG REQUIRED)
+find_package(Qt6Widgets CONFIG REQUIRED)
 if(UsePkgConfig)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(RtMidi REQUIRED IMPORTED_TARGET rtmidi)
@@ -40,6 +37,8 @@ else()
   find_package(RtMidi CONFIG REQUIRED)
   find_package(RtAudio CONFIG REQUIRED)
 endif()
+find_package(clap CONFIG REQUIRED)
+find_package(clap-helpers CONFIG REQUIRED)
 
 add_subdirectory(host)
 
