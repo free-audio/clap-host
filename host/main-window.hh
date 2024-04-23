@@ -41,10 +41,17 @@ private:
    void togglePluginWindowVisibility();
    void recreatePluginWindow();
    void showAboutDialog();
+   void updatePluginMenuItems(bool pluginLoaded = false);
 
    Application &_application;
    QWindow *_pluginViewWindow = nullptr;
    QWidget *_pluginViewWidget = nullptr;
+
+   QAction *_loadPluginPresetAction = nullptr;
+   QAction *_showPluginParametersAction = nullptr;
+   QAction *_showPluginQuickControlsAction = nullptr;
+   QAction *_togglePluginWindowVisibilityAction = nullptr;
+   QAction *_recreatePluginWindowAction = nullptr;
 
    PluginParametersWidget *_pluginParametersWidget = nullptr;
    PluginQuickControlsWidget *_pluginRemoteControlsWidget = nullptr;
