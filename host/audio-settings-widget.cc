@@ -113,7 +113,11 @@ void AudioSettingsWidget::updateSampleRateList() {
 
    bool didSelectSampleRate = false;
    auto deviceIds = _audio->getDeviceIds();
-   auto info = _audio->getDeviceInfo(deviceIds[_deviceChooser->currentIndex()]);
+   const auto index = _deviceChooser->currentIndex();
+   if (index != -1)
+      return;
+
+   auto info = _audio->getDeviceInfo(deviceIds[index]);
    for (size_t i = 0; i < info.sampleRates.size(); ++i) {
       int sr = info.sampleRates[i];
       _sampleRateChooser->addItem(QString::number(sr));
@@ -136,13 +140,13 @@ void AudioSettingsWidget::updateDeviceList() {
 
    auto deviceCount = _audio->getDeviceCount();
    bool deviceFound = false;
-   auto deviceIds   = _audio->getDeviceIds();
+   const auto deviceIds = _audio->getDeviceIds();
 
    // Populate the choices
    for (int i = 0; i < deviceCount; ++i) {
-      auto deviceId = deviceIds[i];
-      auto deviceInfo = _audio->getDeviceInfo(deviceId);
-      QString name = QString::fromStdString(deviceInfo.name);
+      const auto deviceId = deviceIds[i];
+      const auto deviceInfo = _audio->getDeviceInfo(deviceId);
+      const QString name = QString::fromStdString(deviceInfo.name);
       _deviceChooser->addItem(name);
 
       if (!deviceFound && _audioSettings.deviceReference()._name == name) {

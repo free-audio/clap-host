@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QThread>
 #include <QtGlobal>
+#include <QtLogging>
 
 #include "application.hh"
 #include "engine.hh"
@@ -94,8 +95,29 @@ void Engine::start() {
       _audio =
          std::make_unique<RtAudio>(RtAudio::getCompiledApiByName(deviceRef._api.toStdString()));
       if (_audio) {
+         const auto deviceIds = _audio->getDeviceIds();
+         if (deviceIds.empty()) {
+            qWarning() << "Can't activate audio engine: no audio devices";
+            stop();
+            return;
+         }
+
+         std::optional<int> deviceId;
+         for (auto id : deviceIds) {
+            const auto deviceInfo = _audio->getDeviceInfo(id);
+            if (deviceRef._name.toStdString() != deviceInfo.name)
+               continue;
+            deviceId = id;
+            break;
+         }
+
+         if (!deviceId.has_value()) {
+            // At least we can try something...
+            deviceId = _audio->getDefaultOutputDevice();
+         }
+
          RtAudio::StreamParameters outParams;
-         outParams.deviceId = deviceRef._index;
+         outParams.deviceId = deviceId.value();
          outParams.firstChannel = 0;
          outParams.nChannels = 2;
 
@@ -172,7 +194,7 @@ int Engine::audioCallback(void *outputBuffer,
 
    for (int i = 0; i < 8; i++) {
       uint32_t data;
-      do data = thiz->keyboardNoteData[i]; 
+      do data = thiz->keyboardNoteData[i];
 #ifdef _WIN32
       while (data != InterlockedCompareExchange((LONG volatile *) &thiz->keyboardNoteData[i], 0, data));
 #else
@@ -181,7 +203,7 @@ int Engine::audioCallback(void *outputBuffer,
       bool release = data & 0x8000;
       data &= ~0x8000;
       uint32_t note = 0;
-      
+
       if (data == 'Z') note = 48; if (data == 'S') note = 49; if (data == 'X') note = 50; if (data == 'D') note = 51;
       if (data == 'C') note = 52; if (data == 'V') note = 53; if (data == 'G') note = 54; if (data == 'B') note = 55;
       if (data == 'H') note = 56; if (data == 'N') note = 57; if (data == 'J') note = 58; if (data == 'M') note = 59;
@@ -192,7 +214,7 @@ int Engine::audioCallback(void *outputBuffer,
       if (data == 'U') note = 71; if (data == 'I') note = 72; if (data == '9') note = 73; if (data == 'O') note = 74;
       if (data == '0') note = 75; if (data == 'P') note = 76; if (data == '[') note = 77; if (data == '=') note = 78;
       if (data == ']') note = 79;
-      
+
       if (!note) {
       } else if (release) {
          thiz->_pluginHost->processNoteOff(0, 0, note, 100);
