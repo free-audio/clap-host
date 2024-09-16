@@ -44,7 +44,7 @@ jobs:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -135,11 +135,11 @@ jobs:
         run: tar -cvJf clap-host.tar.xz --strip-components 4 builds/${{matrix.build_dir}}/host/Release/clap-host${{matrix.exe_ext}}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: clap-host-${{ matrix.artifact }}.tar.xz
           path: clap-host.tar.xz
 
-      - uses: actions/delete-package-versions@v3
+      - uses: actions/delete-package-versions@v5
         with:
           package-name: qtbase_${{ matrix.triplet }}-clap-host
