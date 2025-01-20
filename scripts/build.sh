@@ -1,4 +1,4 @@
-#! /bin/bash -e
+#! /bin/bash -ex
 
 cpu="$(uname -m)"
 case "$cpu" in
@@ -38,7 +38,7 @@ fi
 if [[ ! -x vcpkg/vcpkg ]] ; then
   vcpkg/bootstrap-vcpkg.sh
 else
-  vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_option upgrade --no-dry-run --debug
+  vcpkg/vcpkg --overlay-triplets=vcpkg-overlay/triplets $vcpkg_option upgrade --no-dry-run --debug --allow-unsupported
 fi
 
 vcpkg_triplet="--triplet ${triplet}-clap-host --host-triplet ${triplet}-clap-host"
