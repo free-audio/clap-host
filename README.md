@@ -11,6 +11,8 @@
 - [Building on Linux](#building-on-linux)
   - [dynamic build using system libraries](#dynamic-build-using-system-libraries)
   - [static build using vcpkg](#static-build-using-vcpkg-1)
+- [Running on macOS](#running-on-macos)
+  - [Keyboard inputs](#keyboard-inputs)
 
 # Minimal Clap Host
 
@@ -105,3 +107,39 @@ git clone --recurse-submodules https://github.com/free-audio/clap-host
 cd clap-host
 scripts/build.sh
 ```
+
+# Running on macOS
+
+Once you have built `clap-host`, you can access the Debug binary from the repo root at:
+
+```bash
+> cd ./builds/ninja-system/host/Debug
+> ./clap-host --help
+Usage: ./clap-host [options]
+clap standalone host
+
+Options:
+  -h, --help                         Displays help on commandline options.
+  --help-all                         Displays help, including generic Qt
+                                     options.
+  -v, --version                      Displays version information.
+  -p, --plugin <path>                path to the plugin
+  -i, --plugin-index <plugin-index>  index of the plugin to create
+```
+
+Then load your plugin via:
+
+```bash
+> ./clap -p /Library/Audio/Plug-Ins/CLAP/<your-plugin>.clap
+```
+
+Note: the `--plugin` flag currently does not work, so use `-p`. Also, paths with `~` don't resolve (but paths with `..` do).
+
+## Keyboard inputs
+
+If your plugin is a synthesizer, you can send `NoteOn` events via your computer keyboard to test things out:
+
+- Keys `Z - M`: C2 - B2 (`S - J` cover sharps / flats)
+- Keys `Q - I`: C3 - B3 (`2 - 9` cover sharps / flats)
+
+(This may only work for your CLAP plugin's default preset).
