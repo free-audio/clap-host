@@ -38,16 +38,6 @@ Application::Application(int &argc, char **argv)
 
    _engine->setParentWindow(_mainWindow->getEmbedWindowId());
 
-   /*
-    * This is here JUST because macOS and QT don't process command lines properly
-    * and I'm not sure why yet.
-    */
-   if (getenv("CLAP_HOST_FORCE_PLUGIN")) {
-      qWarning() << "Warning: Loading plugin from ENV, not command line";
-      _pluginPath = getenv("CLAP_HOST_FORCE_PLUGIN");
-      _pluginIndex = 0;
-   }
-
    if (_engine->loadPlugin(_pluginPath, _pluginIndex))
       _engine->start();
 }
@@ -68,9 +58,11 @@ Application::~Application() {
 void Application::parseCommandLine() {
    QCommandLineParser parser;
 
+   // --plugin is a built-in QGuiApplication option, so we use clap-plugin here to avoid the collision.
+   // https://doc.qt.io/qt-6/qguiapplication.html#supported-command-line-options
    QCommandLineOption pluginOpt(QStringList() << "p"
-                                              << "plugin",
-                                tr("path to the plugin"),
+                                              << "clap-plugin",
+                                tr("path to the CLAP plugin"),
                                 tr("path"));
    QCommandLineOption pluginIndexOpt(QStringList() << "i"
                                                    << "plugin-index",
