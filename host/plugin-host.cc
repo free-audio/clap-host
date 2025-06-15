@@ -114,8 +114,8 @@ bool PluginHost::load(const QString &path, int pluginIndex) {
       static_cast<const clap_plugin_factory *>(_pluginEntry->get_factory(CLAP_PLUGIN_FACTORY_ID));
 
    auto count = _pluginFactory->get_plugin_count(_pluginFactory);
-   if (pluginIndex > count) {
-      qWarning() << "plugin index greater than count :" << count;
+   if (pluginIndex >= count) {
+      qWarning() << "plugin index" << pluginIndex << "is invalid, expected at most" << count-1;
       return false;
    }
 
@@ -172,7 +172,6 @@ void PluginHost::unload() {
    if (_plugin.get())
    {
       _plugin->destroy();
-      _plugin->reset();
    }
 
    _pluginEntry->deinit();
@@ -593,6 +592,8 @@ void PluginHost::processNoteOn(int sampleOffset, int channel, int key, int veloc
    ev.note_id = -1;
    ev.velocity = velocity / 127.0;
 
+   qInfo() << "NoteOn {key" << ev.key << ", velocity: " << ev.velocity
+           << ", channel: " << ev.channel << "}";
    _evIn.push(&ev.header);
 }
 
@@ -611,6 +612,8 @@ void PluginHost::processNoteOff(int sampleOffset, int channel, int key, int velo
    ev.note_id = -1;
    ev.velocity = velocity / 127.0;
 
+   qInfo() << "NoteOff {key" << ev.key << ", velocity: " << ev.velocity
+           << ", channel: " << ev.channel << "}";
    _evIn.push(&ev.header);
 }
 
@@ -664,7 +667,9 @@ void PluginHost::process() {
 
    // We can't process a plugin which failed to start processing
    if (_state == ActiveWithError)
+   {
       return;
+   }
 
    _process.transport = nullptr;
 
@@ -681,9 +686,11 @@ void PluginHost::process() {
 
    if (isPluginSleeping()) {
       if (!_scheduleProcess && _evIn.empty())
+      {
          // The plugin is sleeping, there is no request to wake it up and there are no events to
          // process
          return;
+      }
 
       _scheduleProcess = false;
       if (!_plugin->startProcessing()) {

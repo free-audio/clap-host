@@ -21,7 +21,7 @@ find_package(Qt6Widgets CONFIG REQUIRED)
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang|Clang|GNU")
   add_compile_options(-fvisibility=hidden -fvisibility-inlines-hidden
-    -Werror=return-type -Werror=unused-result -Wno-unused-parameter
+    -Werror=return-type -Werror=unused-result -Wno-unused-parameter -Wno-terminate
     -Wuninitialized -Wvla -Wmultichar -Werror=non-virtual-dtor -Woverloaded-virtual)
 endif()
 
