@@ -132,6 +132,8 @@ bool PluginHost::load(const QString &path, int pluginIndex) {
       return false;
    }
 
+   qInfo() << "Loading plugin with id:" << desc->id << "index:" << pluginIndex;
+
    const auto plugin = _pluginFactory->create_plugin(_pluginFactory, clapHost(), desc->id);
    if (!plugin) {
       qWarning() << "could not create the plugin with id: " << desc->id;
@@ -592,8 +594,6 @@ void PluginHost::processNoteOn(int sampleOffset, int channel, int key, int veloc
    ev.note_id = -1;
    ev.velocity = velocity / 127.0;
 
-   qInfo() << "NoteOn {key" << ev.key << ", velocity: " << ev.velocity
-           << ", channel: " << ev.channel << "}";
    _evIn.push(&ev.header);
 }
 
@@ -612,8 +612,6 @@ void PluginHost::processNoteOff(int sampleOffset, int channel, int key, int velo
    ev.note_id = -1;
    ev.velocity = velocity / 127.0;
 
-   qInfo() << "NoteOff {key" << ev.key << ", velocity: " << ev.velocity
-           << ", channel: " << ev.channel << "}";
    _evIn.push(&ev.header);
 }
 
@@ -667,9 +665,7 @@ void PluginHost::process() {
 
    // We can't process a plugin which failed to start processing
    if (_state == ActiveWithError)
-   {
       return;
-   }
 
    _process.transport = nullptr;
 
@@ -686,11 +682,9 @@ void PluginHost::process() {
 
    if (isPluginSleeping()) {
       if (!_scheduleProcess && _evIn.empty())
-      {
          // The plugin is sleeping, there is no request to wake it up and there are no events to
          // process
          return;
-      }
 
       _scheduleProcess = false;
       if (!_plugin->startProcessing()) {
