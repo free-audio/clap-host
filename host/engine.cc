@@ -38,7 +38,7 @@ Engine::Engine(Application &application)
 }
 
 Engine::~Engine() {
-   std::clog << "     ####### STOPING ENGINE #########" << std::endl;
+   std::clog << "     ####### STOPPING ENGINE #########" << std::endl;
    stop();
    unloadPlugin();
    std::clog << "     ####### ENGINE STOPPED #########" << std::endl;
@@ -94,6 +94,8 @@ void Engine::start() {
       _audio.reset();
       _audio =
          std::make_unique<RtAudio>(RtAudio::getCompiledApiByName(deviceRef._api.toStdString()));
+
+      qInfo() << "Loading with Audio API:" << deviceRef._api;
       if (_audio) {
          const auto deviceIds = _audio->getDeviceIds();
          if (deviceIds.empty()) {
@@ -114,6 +116,13 @@ void Engine::start() {
          if (!deviceId.has_value()) {
             // At least we can try something...
             deviceId = _audio->getDefaultOutputDevice();
+         }
+
+         const auto deviceInfo = _audio->getDeviceInfo(deviceId.value());
+         const auto& validSampleRates = deviceInfo.sampleRates;
+         if (std::find(validSampleRates.begin(), validSampleRates.end(), as.sampleRate()) == validSampleRates.end()) {
+            qWarning() << "The requested sample rate " << as.sampleRate() << " isn't supported by the selected output. Defaulting to " << deviceInfo.preferredSampleRate;
+            as.setSampleRate(deviceInfo.preferredSampleRate);
          }
 
          RtAudio::StreamParameters outParams;

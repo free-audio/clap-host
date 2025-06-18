@@ -114,8 +114,8 @@ bool PluginHost::load(const QString &path, int pluginIndex) {
       static_cast<const clap_plugin_factory *>(_pluginEntry->get_factory(CLAP_PLUGIN_FACTORY_ID));
 
    auto count = _pluginFactory->get_plugin_count(_pluginFactory);
-   if (pluginIndex > count) {
-      qWarning() << "plugin index greater than count :" << count;
+   if (pluginIndex >= count) {
+      qWarning() << "plugin index" << pluginIndex << "is invalid, expected at most" << count-1;
       return false;
    }
 
@@ -131,6 +131,8 @@ bool PluginHost::load(const QString &path, int pluginIndex) {
                  << CLAP_VERSION.major << "." << CLAP_VERSION.minor << "." << CLAP_VERSION.revision;
       return false;
    }
+
+   qInfo() << "Loading plugin with id:" << desc->id << "index:" << pluginIndex;
 
    const auto plugin = _pluginFactory->create_plugin(_pluginFactory, clapHost(), desc->id);
    if (!plugin) {
@@ -172,7 +174,6 @@ void PluginHost::unload() {
    if (_plugin.get())
    {
       _plugin->destroy();
-      _plugin->reset();
    }
 
    _pluginEntry->deinit();
