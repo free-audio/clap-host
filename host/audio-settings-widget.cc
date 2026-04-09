@@ -114,7 +114,7 @@ void AudioSettingsWidget::updateSampleRateList() {
    bool didSelectSampleRate = false;
    auto deviceIds = _audio->getDeviceIds();
    const auto index = _deviceChooser->currentIndex();
-   if (index != -1)
+   if (index == -1)
       return;
 
    auto info = _audio->getDeviceInfo(deviceIds[index]);
@@ -204,8 +204,11 @@ void AudioSettingsWidget::saveSettings() {
    if (_isRefreshingDeviceList)
       return;
 
+   const auto deviceIds = _audio->getDeviceIds();
    int index = _deviceChooser->currentIndex();
-   auto deviceInfo = _audio->getDeviceInfo(index);
+   if(index == -1)
+      return;
+   auto deviceInfo = _audio->getDeviceInfo(deviceIds[index]);
 
    DeviceReference ref;
    auto apiName = RtAudio::getApiName(getSelectedAudioApi());
