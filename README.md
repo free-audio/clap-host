@@ -130,7 +130,7 @@ Options:
 Then load your plugin via:
 
 ```bash
-> ./clap -p /Library/Audio/Plug-Ins/CLAP/<your-plugin>.clap
+> ./clap-host -p /Library/Audio/Plug-Ins/CLAP/<your-plugin>.clap
 ```
 
 Note: the `--plugin` flag currently does not work, so use `-p`. Also, paths with `~` don't resolve (but paths with `..` do).
