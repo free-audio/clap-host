@@ -47,10 +47,10 @@ Engine::~Engine() {
 void Engine::allocateBuffers(size_t bufferSize) {
    freeBuffers();
 
-   _inputs[0] = (float *)std::calloc(1, bufferSize);
-   _inputs[1] = (float *)std::calloc(1, bufferSize);
-   _outputs[0] = (float *)std::calloc(1, bufferSize);
-   _outputs[1] = (float *)std::calloc(1, bufferSize);
+   _inputs[0] = (float *)std::calloc(bufferSize, sizeof(float));
+   _inputs[1] = (float *)std::calloc(bufferSize, sizeof(float));
+   _outputs[0] = (float *)std::calloc(bufferSize, sizeof(float));
+   _outputs[1] = (float *)std::calloc(bufferSize, sizeof(float));
 }
 
 void Engine::freeBuffers() {
@@ -89,7 +89,13 @@ void Engine::start() {
       unsigned int bufferSize = std::min<int>(32, as.bufferSize());
 
       // _audio->openStream() immediately calls process, so just allocate a big buffer for now...
-      allocateBuffers(32 * 1024);
+      // MEMO: since calloc bug is fixed, maybe just size works.
+      bool justSize = false;
+      if(justSize) {
+          allocateBuffers(bufferSize);
+      } else {
+          allocateBuffers(8 * 1024);
+      }
 
       _audio.reset();
       _audio =
